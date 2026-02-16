@@ -1,0 +1,197 @@
+# 📚 Student Portal App — Project Wiki
+
+This wiki serves as the central knowledge base for the Student Portal App project. It covers architecture decisions, module breakdowns, and developer notes.
+
+---
+
+## 🗺️ Table of Contents
+
+1. [Project Summary](#1-project-summary)
+2. [System Architecture](#2-system-architecture)
+3. [Module Breakdown](#3-module-breakdown)
+4. [User Roles](#4-user-roles)
+5. [Database Overview](#5-database-overview)
+6. [Authentication Flow](#6-authentication-flow)
+7. [Development Workflow](#7-development-workflow)
+8. [Milestones & Deliverables](#8-milestones--deliverables)
+
+---
+
+## 1. Project Summary
+
+The Student Portal App is a full-stack academic information system developed as a capstone project. It consists of three components:
+
+- **Android Mobile App** — for students to access their academic data
+- **Web Admin Panel** — for school administrators to manage content
+- **Backend REST API** — the central data layer connecting both interfaces
+
+---
+
+## 2. System Architecture
+
+```
+┌─────────────────────┐        ┌─────────────────────┐
+│   Android Mobile    │        │   Web Admin Panel   │
+│   (React Native)    │        │      (React)        │
+└────────┬────────────┘        └──────────┬──────────┘
+         │                                │
+         └──────────────┬─────────────────┘
+                        │ HTTP / REST
+               ┌────────▼────────┐
+               │   Backend API   │
+               │  (Node/Express) │
+               └────────┬────────┘
+                        │
+               ┌────────▼────────┐
+               │    Database     │
+               │ (MySQL/Postgres)│
+               └─────────────────┘
+```
+
+---
+
+## 3. Module Breakdown
+
+### Mobile App (Student-facing)
+
+| Module | Screen(s) | Notes |
+|---|---|---|
+| Authentication | Login, Reset Password | JWT stored securely on device |
+| Profile | Student Profile | Read-only view of student data |
+| Grades | Grades List | Filtered by semester |
+| Announcements | Announcements Feed | Sorted by latest |
+| Schedule | Class Schedule | Displayed in a timetable layout |
+| Messaging | Inbox, Compose | Internal messaging only |
+
+### Admin Panel (Administrator-facing)
+
+| Module | Page(s) | Notes |
+|---|---|---|
+| Authentication | Admin Login | Separate credentials from students |
+| Student Management | Student List, Edit Student | Full CRUD |
+| Grades Management | Grade Entry Form | Per student, per subject |
+| Announcements | Announcement List, Create/Edit | Rich text optional |
+| Schedule Management | Schedule Editor | Assign rooms and time slots |
+| Messaging | Message Center | View and reply to student messages |
+
+---
+
+## 4. User Roles
+
+| Role | Interface | Access |
+|---|---|---|
+| **Student** | Android App | Read-only (own data only) |
+| **Administrator** | Web Admin Panel | Full CRUD across all modules |
+
+> There are no super-admin or multi-role hierarchies in v1.0.
+
+---
+
+## 5. Database Overview
+
+### Core Tables
+
+```
+users
+├── id
+├── name
+├── email
+├── password_hash
+├── role (student | admin)
+└── created_at
+
+students
+├── id
+├── user_id (FK → users)
+├── student_number
+├── course
+├── year_level
+└── section
+
+grades
+├── id
+├── student_id (FK → students)
+├── subject
+├── semester
+├── grade
+└── updated_at
+
+schedules
+├── id
+├── student_id (FK → students)
+├── subject
+├── room
+├── day
+├── time_start
+└── time_end
+
+announcements
+├── id
+├── title
+├── body
+├── posted_by (FK → users)
+└── created_at
+
+messages
+├── id
+├── sender_id (FK → users)
+├── receiver_id (FK → users)
+├── body
+├── read_at
+└── created_at
+```
+
+---
+
+## 6. Authentication Flow
+
+```
+1. User submits credentials (email + password)
+2. Backend verifies email exists in DB
+3. bcrypt compares submitted password with stored hash
+4. On success → generate JWT (signed with JWT_SECRET)
+5. JWT returned to client and stored locally
+6. All protected routes require Authorization: Bearer <token> header
+7. Backend middleware validates token on every request
+8. Token expires after 7 days — user must log in again
+```
+
+---
+
+## 7. Development Workflow
+
+```
+main          ← production-ready, stable releases only
+  └── dev     ← integration branch, all features merge here first
+        ├── feature/student-login
+        ├── feature/grades-screen
+        └── fix/token-expiry-bug
+```
+
+- All new work branches off `dev`
+- PRs must be reviewed before merging into `dev`
+- `dev` is merged into `main` only at milestone completions
+- See [CONTRIBUTING.md](./CONTRIBUTING.md) for full branch and commit guidelines
+
+---
+
+## 8. Milestones & Deliverables
+
+| Milestone | Target | Deliverable | Payment |
+|---|---|---|---|
+| **Kickoff** | Week 1 | Requirements confirmed, repo set up, DB schema finalized | ₱12,500 (50%) |
+| **Final Delivery** | Week 5 | Complete system, APK, source code, documentation | ₱12,500 (50%) |
+
+### Weekly Breakdown
+
+| Week | Focus |
+|---|---|
+| Week 1 | Project setup, database design, authentication API |
+| Week 2 | Core student APIs (profile, grades, schedule) |
+| Week 3 | Android app screens + admin panel |
+| Week 4 | Messaging, announcements, integration testing |
+| Week 5 | Bug fixes, APK build, documentation, handover |
+
+---
+
+*Last updated: February 2026*

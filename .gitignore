@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Build outputs
+dist/
+build/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# React Native
+mobile/android/app/build/
+mobile/android/.gradle/
+mobile/ios/Pods/
+*.apk
+*.aab
+
+# Logs
+*.log
+npm-debug.log*
+
+# Testing
+coverage/
