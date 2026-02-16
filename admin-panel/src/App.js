@@ -7,6 +7,9 @@ import Grades from './pages/Grades';
 import Announcements from './pages/Announcements';
 import Schedules from './pages/Schedules';
 import Messages from './pages/Messages';
+import Subjects from './pages/Subjects';
+import Enrollments from './pages/Enrollments';
+import EnrollmentSettings from './pages/EnrollmentSettings';
 
 function App() {
   return (
@@ -19,6 +22,9 @@ function App() {
         <Route path="/announcements" element={<Announcements />} />
         <Route path="/schedules" element={<Schedules />} />
         <Route path="/messages" element={<Messages />} />
+        <Route path="/subjects" element={<Subjects />} />
+        <Route path="/enrollments" element={<Enrollments />} />
+        <Route path="/enrollment-settings" element={<EnrollmentSettings />} />
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>

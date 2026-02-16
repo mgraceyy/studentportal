@@ -57,8 +57,9 @@ The Student Portal App is a full-stack academic information system developed as 
 | Module | Screen(s) | Notes |
 |---|---|---|
 | Authentication | Login, Reset Password | JWT stored securely on device |
-| Profile | Student Profile | Read-only view of student data |
-| Grades | Grades List | Filtered by semester |
+| Profile | Student Profile | Read-only view of student data (name, contact, status, tuition balance) |
+| Enrollment | Available Subjects, My Enrollments | Students can browse & enroll in subjects with available slots |
+| Grades | Grades List | Filtered by semester, linked to subjects |
 | Announcements | Announcements Feed | Sorted by latest |
 | Schedule | Class Schedule | Displayed in a timetable layout |
 | Messaging | Inbox, Compose | Internal messaging only |
@@ -68,8 +69,10 @@ The Student Portal App is a full-stack academic information system developed as 
 | Module | Page(s) | Notes |
 |---|---|---|
 | Authentication | Admin Login | Separate credentials from students |
-| Student Management | Student List, Edit Student | Full CRUD |
-| Grades Management | Grade Entry Form | Per student, per subject |
+| Student Management | Student List, Edit Student | Full CRUD with enrollment status & tuition balance |
+| Subject Management | Subject List, Create/Edit Subject | Manage subject code, units, schedule, max slots |
+| Enrollment Records | Enrollment List | View all student enrollment records |
+| Grades Management | Grade Entry Form | Per student, per subject (linked to subjects table) |
 | Announcements | Announcement List, Create/Edit | Rich text optional |
 | Schedule Management | Schedule Editor | Assign rooms and time slots |
 | Messaging | Message Center | View and reply to student messages |
@@ -94,7 +97,11 @@ The Student Portal App is a full-stack academic information system developed as 
 ```
 users
 ├── id
-├── name
+├── first_name
+├── middle_name
+├── last_name
+├── mobile_number
+├── address
 ├── email
 ├── password_hash
 ├── role (student | admin)
@@ -106,12 +113,40 @@ students
 ├── student_number
 ├── course
 ├── year_level
-└── section
+├── section
+├── status (enrolled | not_enrolled)
+└── tuition_balance
+
+subjects
+├── id
+├── code (unique)
+├── name
+├── description
+├── units
+├── semester
+├── academic_year
+├── room
+├── day
+├── time_start
+├── time_end
+├── max_slots
+├── current_slots
+├── created_by (FK → users)
+└── created_at
+
+enrollments
+├── id
+├── student_id (FK → students)
+├── subject_id (FK → subjects)
+├── semester
+├── academic_year
+└── enrolled_at
+    (UNIQUE: student_id + subject_id + semester + academic_year)
 
 grades
 ├── id
 ├── student_id (FK → students)
-├── subject
+├── subject_id (FK → subjects)
 ├── semester
 ├── grade
 └── updated_at
@@ -119,11 +154,19 @@ grades
 schedules
 ├── id
 ├── student_id (FK → students)
-├── subject
+├── subject_id (FK → subjects)
 ├── room
 ├── day
 ├── time_start
 └── time_end
+
+enrollment_settings
+├── id
+├── enrollment_open (boolean)
+├── enrollment_start (timestamp)
+├── enrollment_end (timestamp)
+├── updated_by (FK → users)
+└── updated_at
 
 announcements
 ├── id

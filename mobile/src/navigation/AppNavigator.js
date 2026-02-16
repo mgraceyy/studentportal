@@ -9,6 +9,7 @@ import GradesScreen from '../screens/GradesScreen';
 import ScheduleScreen from '../screens/ScheduleScreen';
 import AnnouncementsScreen from '../screens/AnnouncementsScreen';
 import MessagesScreen from '../screens/MessagesScreen';
+import EnrollmentScreen from '../screens/EnrollmentScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -17,6 +18,7 @@ function HomeTabs() {
   return (
     <Tab.Navigator>
       <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Enrollment" component={EnrollmentScreen} />
       <Tab.Screen name="Grades" component={GradesScreen} />
       <Tab.Screen name="Schedule" component={ScheduleScreen} />
       <Tab.Screen name="Announcements" component={AnnouncementsScreen} />
