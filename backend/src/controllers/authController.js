@@ -24,7 +24,7 @@ async function login(req, res, next) {
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
 
-    res.json({ token, role: user.role });
+    res.json({ token, role: user.role, first_name: user.first_name, last_name: user.last_name });
   } catch (err) {
     next(err);
   }

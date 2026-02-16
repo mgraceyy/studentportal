@@ -176,6 +176,11 @@ Base URL: `http://localhost:5000/api`
 | GET | `/students/me` | Get own profile | Student |
 | GET | `/students/me/grades` | Get own grades | Student |
 | GET | `/students/me/schedule` | Get own class schedule | Student |
+| GET | `/students/enrollment-status` | Check if enrollment is open | Student |
+| GET | `/students/subjects/available` | List available subjects for enrollment | Student |
+| GET | `/students/me/enrollments` | Get own enrolled subjects | Student |
+| POST | `/students/me/enroll` | Enroll in a subject | Student |
+| DELETE | `/students/me/enroll/:enrollmentId` | Drop an enrolled subject | Student |
 
 ### Announcements
 | Method | Endpoint | Description | Access |
@@ -200,6 +205,13 @@ Base URL: `http://localhost:5000/api`
 | DELETE | `/admin/students/:id` | Deactivate a student | Admin |
 | PUT | `/admin/grades/:studentId` | Post or update grades | Admin |
 | PUT | `/admin/schedules/:studentId` | Update class schedule | Admin |
+| GET | `/admin/subjects` | Get all subjects | Admin |
+| POST | `/admin/subjects` | Add a new subject | Admin |
+| PUT | `/admin/subjects/:id` | Update a subject | Admin |
+| DELETE | `/admin/subjects/:id` | Delete a subject | Admin |
+| GET | `/admin/enrollments` | View all enrollment records | Admin |
+| GET | `/admin/enrollment-settings` | Get enrollment window settings | Admin |
+| PUT | `/admin/enrollment-settings` | Update enrollment window (toggle + dates) | Admin |
 
 ---
 

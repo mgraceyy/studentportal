@@ -20,10 +20,10 @@ export default function ScheduleScreen() {
     <View style={styles.container}>
       <FlatList
         data={schedule}
-        keyExtractor={(item, index) => `${item.subject}-${index}`}
+        keyExtractor={(item, index) => `${item.subject_code}-${index}`}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <Text style={styles.subject}>{item.subject}</Text>
+            <Text style={styles.subject}>{item.subject_code} - {item.subject_name}</Text>
             <Text style={styles.detail}>{item.day} | {item.time_start} - {item.time_end}</Text>
             <Text style={styles.detail}>Room: {item.room}</Text>
           </View>

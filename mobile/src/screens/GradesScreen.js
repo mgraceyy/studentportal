@@ -20,10 +20,10 @@ export default function GradesScreen() {
     <View style={styles.container}>
       <FlatList
         data={grades}
-        keyExtractor={(item, index) => `${item.subject}-${index}`}
+        keyExtractor={(item, index) => `${item.subject_code}-${index}`}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <Text style={styles.subject}>{item.subject}</Text>
+            <Text style={styles.subject}>{item.subject_code} - {item.subject_name}</Text>
             <Text style={styles.detail}>Semester: {item.semester}</Text>
             <Text style={styles.grade}>Grade: {item.grade}</Text>
           </View>
