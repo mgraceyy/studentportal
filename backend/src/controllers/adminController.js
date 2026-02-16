@@ -146,40 +146,77 @@ async function getAllSubjects(req, res, next) {
        LEFT JOIN users u ON s.created_by = u.id
        ORDER BY s.code`
     );
-    res.json(result.rows);
+
+    const coursesResult = await pool.query(
+      'SELECT subject_id, course FROM subject_courses ORDER BY course'
+    );
+
+    const courseMap = {};
+    for (const row of coursesResult.rows) {
+      if (!courseMap[row.subject_id]) courseMap[row.subject_id] = [];
+      courseMap[row.subject_id].push(row.course);
+    }
+
+    const subjects = result.rows.map((s) => ({
+      ...s,
+      courses: courseMap[s.id] || [],
+    }));
+
+    res.json(subjects);
   } catch (err) {
     next(err);
   }
 }
 
 async function addSubject(req, res, next) {
+  const client = await pool.connect();
   try {
     const {
       code, name, description, units, semester, academic_year,
-      room, day, time_start, time_end, max_slots,
+      room, day, time_start, time_end, max_slots, courses,
     } = req.body;
 
-    const result = await pool.query(
+    await client.query('BEGIN');
+
+    const result = await client.query(
       `INSERT INTO subjects (code, name, description, units, semester, academic_year, room, day, time_start, time_end, max_slots, created_by)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
       [code, name, description || null, units || 3, semester, academic_year, room || null, day || null, time_start || null, time_end || null, max_slots || 40, req.user.id]
     );
 
-    res.status(201).json(result.rows[0]);
+    const subject = result.rows[0];
+
+    if (courses && courses.length > 0) {
+      for (const course of courses) {
+        await client.query(
+          'INSERT INTO subject_courses (subject_id, course) VALUES ($1, $2)',
+          [subject.id, course]
+        );
+      }
+    }
+
+    await client.query('COMMIT');
+    res.status(201).json({ ...subject, courses: courses || [] });
   } catch (err) {
+    await client.query('ROLLBACK');
     next(err);
+  } finally {
+    client.release();
   }
 }
 
 async function updateSubject(req, res, next) {
+  const client = await pool.connect();
   try {
     const { id } = req.params;
     const {
       code, name, description, units, semester, academic_year,
-      room, day, time_start, time_end, max_slots,
+      room, day, time_start, time_end, max_slots, courses,
     } = req.body;
 
-    const result = await pool.query(
+    await client.query('BEGIN');
+
+    const result = await client.query(
       `UPDATE subjects SET code = $1, name = $2, description = $3, units = $4,
        semester = $5, academic_year = $6, room = $7, day = $8,
        time_start = $9, time_end = $10, max_slots = $11
@@ -188,12 +225,33 @@ async function updateSubject(req, res, next) {
     );
 
     if (result.rows.length === 0) {
+      await client.query('ROLLBACK');
       return res.status(404).json({ error: 'Subject not found.' });
     }
 
-    res.json(result.rows[0]);
+    if (courses !== undefined) {
+      await client.query('DELETE FROM subject_courses WHERE subject_id = $1', [id]);
+      for (const course of courses) {
+        await client.query(
+          'INSERT INTO subject_courses (subject_id, course) VALUES ($1, $2)',
+          [id, course]
+        );
+      }
+    }
+
+    await client.query('COMMIT');
+
+    const coursesResult = await pool.query(
+      'SELECT course FROM subject_courses WHERE subject_id = $1 ORDER BY course',
+      [id]
+    );
+
+    res.json({ ...result.rows[0], courses: coursesResult.rows.map((r) => r.course) });
   } catch (err) {
+    await client.query('ROLLBACK');
     next(err);
+  } finally {
+    client.release();
   }
 }
 

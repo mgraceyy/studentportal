@@ -43,6 +43,13 @@ const migration = `
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
 
+  CREATE TABLE IF NOT EXISTS subject_courses (
+    id SERIAL PRIMARY KEY,
+    subject_id INTEGER REFERENCES subjects(id) ON DELETE CASCADE,
+    course VARCHAR(255) NOT NULL,
+    UNIQUE(subject_id, course)
+  );
+
   CREATE TABLE IF NOT EXISTS enrollments (
     id SERIAL PRIMARY KEY,
     student_id INTEGER REFERENCES students(id) ON DELETE CASCADE,

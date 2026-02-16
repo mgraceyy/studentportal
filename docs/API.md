@@ -48,7 +48,7 @@ Returns the student's grades with subject_code and subject_name.
 Returns the student's class schedule with subject_code and subject_name.
 
 ### GET `/students/subjects/available`
-Lists all subjects with available slots (`current_slots < max_slots`).
+Lists subjects with available slots that are eligible for the student's course. Only subjects linked to the student's course via `subject_courses` are returned.
 
 ### GET `/students/me/enrollments`
 Lists all subjects the student is enrolled in.
@@ -62,14 +62,14 @@ Check if enrollment is currently open. Returns toggle state, date range, and a h
 ```
 
 ### POST `/students/me/enroll`
-Enroll in a subject. Blocked with 403 if enrollment is closed.
+Enroll in a subject. Blocked with 403 if enrollment is closed or subject is not available for the student's course.
 
 **Body:**
 ```json
 { "subject_id": 1, "semester": "1st", "academic_year": "2025-2026" }
 ```
 
-**Errors:** 400 (full), 403 (enrollment closed), 404 (not found), 409 (already enrolled)
+**Errors:** 400 (full), 403 (enrollment closed or course mismatch), 404 (not found), 409 (already enrolled)
 
 ### DELETE `/students/me/enroll/:enrollmentId`
 Drop an enrolled subject. Frees up one slot. Blocked with 403 if enrollment is closed.
@@ -118,10 +118,10 @@ Add a schedule entry.
 ```
 
 ### GET `/admin/subjects`
-List all subjects.
+List all subjects. Each subject includes a `courses` array listing which courses can enroll in it.
 
 ### POST `/admin/subjects`
-Create a subject.
+Create a subject. Pass a `courses` array to specify which courses can enroll.
 
 **Body:**
 ```json
@@ -131,12 +131,13 @@ Create a subject.
   "semester": "1st", "academic_year": "2025-2026",
   "room": "Room 301", "day": "Monday",
   "time_start": "08:00", "time_end": "09:30",
-  "max_slots": 40
+  "max_slots": 40,
+  "courses": ["BSCS", "BSIT"]
 }
 ```
 
 ### PUT `/admin/subjects/:id`
-Update a subject.
+Update a subject. If `courses` array is provided, it replaces the existing course list.
 
 ### DELETE `/admin/subjects/:id`
 Delete a subject.

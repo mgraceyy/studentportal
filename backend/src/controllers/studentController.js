@@ -97,12 +97,25 @@ async function getEnrollmentStatus(req, res, next) {
 
 async function getAvailableSubjects(req, res, next) {
   try {
+    const studentResult = await pool.query(
+      'SELECT course FROM students WHERE user_id = $1',
+      [req.user.id]
+    );
+
+    if (studentResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Student record not found.' });
+    }
+
+    const studentCourse = studentResult.rows[0].course;
+
     const result = await pool.query(
-      `SELECT id, code, name, description, units, semester, academic_year,
-              room, day, time_start, time_end, max_slots, current_slots
-       FROM subjects
-       WHERE current_slots < max_slots
-       ORDER BY code`
+      `SELECT s.id, s.code, s.name, s.description, s.units, s.semester, s.academic_year,
+              s.room, s.day, s.time_start, s.time_end, s.max_slots, s.current_slots
+       FROM subjects s
+       JOIN subject_courses sc ON s.id = sc.subject_id
+       WHERE s.current_slots < s.max_slots AND sc.course = $1
+       ORDER BY s.code`,
+      [studentCourse]
     );
     res.json(result.rows);
   } catch (err) {
@@ -142,7 +155,7 @@ async function enrollSubject(req, res, next) {
     await client.query('BEGIN');
 
     const studentResult = await client.query(
-      'SELECT id FROM students WHERE user_id = $1',
+      'SELECT id, course FROM students WHERE user_id = $1',
       [req.user.id]
     );
 
@@ -152,6 +165,17 @@ async function enrollSubject(req, res, next) {
     }
 
     const studentId = studentResult.rows[0].id;
+    const studentCourse = studentResult.rows[0].course;
+
+    const courseCheck = await client.query(
+      'SELECT 1 FROM subject_courses WHERE subject_id = $1 AND course = $2',
+      [subject_id, studentCourse]
+    );
+
+    if (courseCheck.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({ error: 'This subject is not available for your course.' });
+    }
 
     const subjectResult = await client.query(
       'SELECT * FROM subjects WHERE id = $1',

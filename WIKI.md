@@ -134,6 +134,14 @@ subjects
 ├── created_by (FK → users)
 └── created_at
 
+subject_courses
+├── id
+├── subject_id (FK → subjects)
+└── course
+    (UNIQUE: subject_id + course)
+    Links subjects to eligible courses.
+    A subject with no courses is not enrollable.
+
 enrollments
 ├── id
 ├── student_id (FK → students)

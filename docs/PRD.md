@@ -33,9 +33,10 @@ The Student Portal App is a full-stack academic information system. Students use
 - Each subject has optional schedule info: room, day, time start/end
 - Max slots limit controls enrollment capacity
 - Current slots tracked automatically
+- **Course eligibility**: each subject is assigned one or more courses (e.g., BSCS, BSIT) via the `subject_courses` table. Only students whose course matches can see and enroll in the subject.
 
 ### 4. Enrollment (Student)
-- Students browse available subjects (those with open slots)
+- Students only see subjects available for their course
 - Students enroll in subjects for a given semester/academic year
 - Duplicate enrollment prevention (unique constraint)
 - Students can drop subjects (frees up slots)
@@ -67,7 +68,7 @@ The Student Portal App is a full-stack academic information system. Students use
 
 ## Database Tables
 
-9 tables: `users`, `students`, `subjects`, `enrollments`, `grades`, `schedules`, `announcements`, `messages`, `enrollment_settings`
+10 tables: `users`, `students`, `subjects`, `subject_courses`, `enrollments`, `grades`, `schedules`, `announcements`, `messages`, `enrollment_settings`
 
 See [WIKI.md](../WIKI.md#5-database-overview) for full schema details.
 
