@@ -21,8 +21,7 @@ const migration = `
     course VARCHAR(255) NOT NULL,
     year_level INTEGER NOT NULL,
     section VARCHAR(50) NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT 'not_enrolled' CHECK (status IN ('enrolled', 'not_enrolled')),
-    tuition_balance DECIMAL(12, 2) NOT NULL DEFAULT 0.00
+    status VARCHAR(20) NOT NULL DEFAULT 'not_enrolled' CHECK (status IN ('enrolled', 'not_enrolled', 'deactivated'))
   );
 
   CREATE TABLE IF NOT EXISTS subjects (
@@ -34,7 +33,7 @@ const migration = `
     semester VARCHAR(50) NOT NULL,
     academic_year VARCHAR(20) NOT NULL,
     room VARCHAR(100),
-    day VARCHAR(20),
+    day VARCHAR(255),
     time_start TIME,
     time_end TIME,
     max_slots INTEGER NOT NULL DEFAULT 40,
@@ -43,12 +42,9 @@ const migration = `
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
 
-  CREATE TABLE IF NOT EXISTS subject_courses (
-    id SERIAL PRIMARY KEY,
-    subject_id INTEGER REFERENCES subjects(id) ON DELETE CASCADE,
-    course VARCHAR(255) NOT NULL,
-    UNIQUE(subject_id, course)
-  );
+  ALTER TABLE subjects ADD COLUMN IF NOT EXISTS prospectus_code VARCHAR(20);
+
+  DROP TABLE IF EXISTS subject_courses CASCADE;
 
   CREATE TABLE IF NOT EXISTS enrollments (
     id SERIAL PRIMARY KEY,
@@ -108,6 +104,16 @@ const migration = `
   INSERT INTO enrollment_settings (id, enrollment_open)
     VALUES (1, FALSE)
     ON CONFLICT (id) DO NOTHING;
+
+  CREATE TABLE IF NOT EXISTS prospectus (
+    id SERIAL PRIMARY KEY,
+    course VARCHAR(20) NOT NULL,
+    code VARCHAR(20) NOT NULL,
+    name VARCHAR(150) NOT NULL,
+    units INTEGER NOT NULL DEFAULT 3,
+    semester VARCHAR(30) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
 `;
 
 async function runMigration() {

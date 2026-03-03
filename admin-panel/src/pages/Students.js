@@ -1,10 +1,968 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import api from '../services/api';
+
+const COURSES = [
+  'BSIT', 'BSCS', 'BSIS', 'BSA', 'BSBA', 'BSN', 'BSED', 'BEED', 'BSCRIM',
+];
+
+const YEAR_LEVELS = ['1st', '2nd', '3rd', '4th', '5th'];
+const yearLabel = (n) => YEAR_LEVELS[n - 1] || n;
+
+
+const EMPTY_FORM = {
+  first_name: '',
+  middle_name: '',
+  last_name: '',
+  email: '',
+  mobile_number: '',
+  address: '',
+  student_number: '',
+  course: 'BSIT',
+  year_level: 1,
+  section: '',
+  status: 'not_enrolled',
+};
+
+// ── Styles ──
+
+const styles = {
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 700,
+    color: '#1a1a2e',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#888',
+    marginTop: 2,
+  },
+  addBtn: {
+    padding: '10px 20px',
+    background: '#1a1a2e',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 8,
+    fontSize: 14,
+    fontWeight: 600,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+  },
+  searchRow: {
+    display: 'flex',
+    gap: 12,
+    marginBottom: 20,
+    flexWrap: 'wrap',
+  },
+  searchInput: {
+    flex: 1,
+    minWidth: 220,
+    padding: '10px 14px',
+    border: '1.5px solid #ddd',
+    borderRadius: 8,
+    fontSize: 14,
+    outline: 'none',
+  },
+  filterSelect: {
+    padding: '10px 14px',
+    border: '1.5px solid #ddd',
+    borderRadius: 8,
+    fontSize: 14,
+    outline: 'none',
+    background: '#fff',
+    minWidth: 140,
+  },
+  tableWrap: {
+    background: '#fff',
+    borderRadius: 12,
+    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+    overflowX: 'auto',
+  },
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    fontSize: 14,
+  },
+  th: {
+    textAlign: 'left',
+    padding: '14px 16px',
+    background: '#f8f9fa',
+    color: '#555',
+    fontWeight: 600,
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    borderBottom: '1px solid #eee',
+    whiteSpace: 'nowrap',
+  },
+  td: {
+    padding: '12px 16px',
+    borderBottom: '1px solid #f0f0f0',
+    color: '#333',
+    whiteSpace: 'nowrap',
+  },
+  badge: {
+    display: 'inline-block',
+    padding: '3px 10px',
+    borderRadius: 20,
+    fontSize: 12,
+    fontWeight: 600,
+  },
+  badgeEnrolled: {
+    background: '#e8f5e9',
+    color: '#2e7d32',
+  },
+  badgeNotEnrolled: {
+    background: '#fff3e0',
+    color: '#e65100',
+  },
+  badgeDeactivated: {
+    background: '#ffebee',
+    color: '#c62828',
+  },
+  actionBtn: {
+    padding: '6px 12px',
+    border: 'none',
+    borderRadius: 6,
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: 'pointer',
+    marginRight: 6,
+  },
+  editBtn: {
+    background: '#e3f2fd',
+    color: '#1565c0',
+  },
+  deactivateBtn: {
+    background: '#fff3e0',
+    color: '#e65100',
+  },
+  activateBtn: {
+    background: '#e8f5e9',
+    color: '#2e7d32',
+  },
+  emptyState: {
+    textAlign: 'center',
+    padding: '48px 20px',
+    color: '#999',
+  },
+  overlay: {
+    position: 'fixed',
+    top: 0, left: 0, right: 0, bottom: 0,
+    background: 'rgba(0,0,0,0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  modal: {
+    background: '#fff',
+    borderRadius: 12,
+    width: '100%',
+    maxWidth: 640,
+    maxHeight: '90vh',
+    overflow: 'auto',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+  },
+  modalHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '20px 24px',
+    borderBottom: '1px solid #eee',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 700,
+    color: '#1a1a2e',
+  },
+  closeBtn: {
+    background: 'none',
+    border: 'none',
+    fontSize: 22,
+    color: '#999',
+    cursor: 'pointer',
+  },
+  modalBody: {
+    padding: 24,
+  },
+  formGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: 16,
+  },
+  formGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  formGroupFull: {
+    display: 'flex',
+    flexDirection: 'column',
+    gridColumn: '1 / -1',
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: '#444',
+    marginBottom: 6,
+  },
+  input: {
+    padding: '9px 12px',
+    border: '1.5px solid #ddd',
+    borderRadius: 8,
+    fontSize: 14,
+    outline: 'none',
+  },
+  select: {
+    padding: '9px 12px',
+    border: '1.5px solid #ddd',
+    borderRadius: 8,
+    fontSize: 14,
+    outline: 'none',
+    background: '#fff',
+  },
+  modalFooter: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: 10,
+    padding: '16px 24px',
+    borderTop: '1px solid #eee',
+  },
+  cancelBtn: {
+    padding: '10px 20px',
+    background: '#f5f5f5',
+    color: '#555',
+    border: 'none',
+    borderRadius: 8,
+    fontSize: 14,
+    fontWeight: 600,
+  },
+  saveBtn: {
+    padding: '10px 20px',
+    background: '#1a1a2e',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 8,
+    fontSize: 14,
+    fontWeight: 600,
+  },
+  error: {
+    background: '#fff0f0',
+    color: '#d32f2f',
+    padding: '10px 14px',
+    borderRadius: 8,
+    fontSize: 13,
+    marginBottom: 16,
+    border: '1px solid #ffcdd2',
+  },
+  confirmText: {
+    fontSize: 15,
+    color: '#333',
+    lineHeight: 1.6,
+    padding: '20px 24px',
+  },
+  confirmDeactivateBtn: {
+    padding: '10px 20px',
+    background: '#e65100',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 8,
+    fontSize: 14,
+    fontWeight: 600,
+  },
+  count: {
+    fontSize: 13,
+    color: '#999',
+    marginTop: 12,
+    padding: '0 4px',
+  },
+  // Schedule modal
+  viewScheduleBtn: { background: '#e8f5e9', color: '#2e7d32' },
+  scheduleModal: {
+    background: '#fff',
+    borderRadius: 12,
+    width: '100%',
+    maxWidth: 680,
+    maxHeight: '90vh',
+    overflow: 'auto',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  modalSub: { fontSize: 13, color: '#888', marginTop: 2 },
+  modalBody2: { padding: '20px 24px', flex: 1, overflow: 'auto' },
+  scheduleTable: { width: '100%', borderCollapse: 'collapse', marginBottom: 20 },
+  stTh: {
+    padding: '9px 12px',
+    textAlign: 'left',
+    fontSize: 11,
+    fontWeight: 700,
+    color: '#aaa',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    background: '#fafafa',
+    borderBottom: '1px solid #eee',
+  },
+  stTd: {
+    padding: '11px 12px',
+    fontSize: 13,
+    color: '#333',
+    borderBottom: '1px solid #f5f5f5',
+    verticalAlign: 'middle',
+  },
+  dayBadge: {
+    display: 'inline-block',
+    padding: '2px 8px',
+    borderRadius: 10,
+    fontSize: 11,
+    fontWeight: 600,
+    background: '#f3e5f5',
+    color: '#6a1b9a',
+  },
+  deleteBtnSm: {
+    padding: '4px 10px',
+    background: '#ffebee',
+    color: '#c62828',
+    border: 'none',
+    borderRadius: 5,
+    fontSize: 11,
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  emptySchedule: {
+    textAlign: 'center',
+    padding: '32px 0',
+    color: '#bbb',
+    fontSize: 13,
+    marginBottom: 20,
+  },
+};
 
 function Students() {
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [filterCourse, setFilterCourse] = useState('');
+  const [filterYear, setFilterYear] = useState('');
+
+  // Modal state
+  const [showModal, setShowModal] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [formError, setFormError] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  // Delete confirm
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
+  // Schedule modal
+  const [scheduleStudent, setScheduleStudent] = useState(null);
+  const [scheduleEntries, setScheduleEntries] = useState([]);
+  const [entryDeleteTarget, setEntryDeleteTarget] = useState(null);
+  const [entryDeleting, setEntryDeleting] = useState(false);
+
+  const fetchStudents = useCallback(async () => {
+    try {
+      const { data } = await api.get('/admin/students');
+      setStudents([...data].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
+    } catch (err) {
+      // silent
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStudents();
+  }, [fetchStudents]);
+
+  // ── Filtering ──
+
+  const filtered = students.filter((s) => {
+    const q = search.toLowerCase();
+    const matchesSearch =
+      !q ||
+      s.first_name.toLowerCase().includes(q) ||
+      s.last_name.toLowerCase().includes(q) ||
+      s.student_number.toLowerCase().includes(q) ||
+      s.email.toLowerCase().includes(q);
+
+    const matchesCourse = !filterCourse || s.course === filterCourse;
+    const matchesYear = !filterYear || s.year_level === parseInt(filterYear);
+
+    return matchesSearch && matchesCourse && matchesYear;
+  });
+
+  const isFiltering = search || filterCourse || filterYear;
+  const displayed = isFiltering ? filtered : filtered.slice(0, 10);
+
+  // ── Add / Edit ──
+
+  const openAdd = () => {
+    setEditing(null);
+    setForm(EMPTY_FORM);
+    setFormError('');
+    setShowModal(true);
+  };
+
+  const openEdit = (student) => {
+    setEditing(student);
+    setForm({
+      first_name: student.first_name,
+      middle_name: student.middle_name || '',
+      last_name: student.last_name,
+      email: student.email,
+      mobile_number: student.mobile_number || '',
+      address: student.address || '',
+      student_number: student.student_number,
+      course: student.course,
+      year_level: student.year_level,
+      section: student.section,
+      status: student.status,
+    });
+    setFormError('');
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setEditing(null);
+    setFormError('');
+  };
+
+  const handleChange = (field) => (e) => {
+    setForm((prev) => ({ ...prev, [field]: e.target.value }));
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setFormError('');
+    setSaving(true);
+
+    try {
+      if (editing) {
+        await api.put(`/admin/students/${editing.id}`, {
+          first_name: form.first_name,
+          middle_name: form.middle_name,
+          last_name: form.last_name,
+          email: form.email,
+          mobile_number: form.mobile_number,
+          address: form.address,
+          course: form.course,
+          year_level: parseInt(form.year_level),
+          section: form.section,
+          status: form.status,
+        });
+      } else {
+        await api.post('/admin/students', {
+          ...form,
+          year_level: parseInt(form.year_level),
+        });
+      }
+      closeModal();
+      fetchStudents();
+    } catch (err) {
+      setFormError(err.response?.data?.error || 'Failed to save student.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // ── Deactivate / Activate ──
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await api.delete(`/admin/students/${deleteTarget.id}`);
+      setDeleteTarget(null);
+      fetchStudents();
+    } catch (err) {
+      // silent
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleActivate = async (student) => {
+    try {
+      await api.put(`/admin/students/${student.id}`, {
+        ...student,
+        status: 'not_enrolled',
+      });
+      fetchStudents();
+    } catch (err) {
+      // silent
+    }
+  };
+
+  // ── Schedule modal ──
+
+  const formatSchedTime = (t) => {
+    if (!t) return '';
+    const [h, m] = t.split(':');
+    const hour = parseInt(h, 10);
+    return `${hour % 12 || 12}:${m} ${hour >= 12 ? 'PM' : 'AM'}`;
+  };
+
+  const openSchedule = async (student) => {
+    setScheduleStudent(student);
+    setScheduleEntries([]);
+    try {
+      const { data } = await api.get('/admin/schedules');
+      setScheduleEntries(data.filter((sc) => sc.student_number === student.student_number));
+    } catch (err) { /* silent */ }
+  };
+
+  const closeScheduleModal = () => {
+    setScheduleStudent(null);
+    setEntryDeleteTarget(null);
+  };
+
+  const handleDeleteEntry = async () => {
+    if (!entryDeleteTarget) return;
+    setEntryDeleting(true);
+    try {
+      await api.delete(`/admin/schedules/${entryDeleteTarget.id}`);
+      setEntryDeleteTarget(null);
+      const { data } = await api.get('/admin/schedules');
+      setScheduleEntries(data.filter((sc) => sc.student_number === scheduleStudent.student_number));
+    } catch (err) { /* silent */ }
+    finally { setEntryDeleting(false); }
+  };
+
   return (
-    <div style={{ padding: 20 }}>
-      <h1>Student Management</h1>
-      <p>Student list and CRUD operations will be implemented here.</p>
+    <div>
+      {/* Header */}
+      <div style={styles.header}>
+        <div>
+          <h1 style={styles.title}>Student Management</h1>
+          <p style={styles.subtitle}>Manage student accounts and information</p>
+        </div>
+        <button style={styles.addBtn} onClick={openAdd}>
+          + Add Student
+        </button>
+      </div>
+
+      {/* Search & Filters */}
+      <div style={styles.searchRow}>
+        <input
+          type="text"
+          placeholder="Search by name, student number, or email..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={styles.searchInput}
+        />
+        <select
+          value={filterCourse}
+          onChange={(e) => setFilterCourse(e.target.value)}
+          style={styles.filterSelect}
+        >
+          <option value="">All Courses</option>
+          {COURSES.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+        <select
+          value={filterYear}
+          onChange={(e) => setFilterYear(e.target.value)}
+          style={styles.filterSelect}
+        >
+          <option value="">Year Level</option>
+          {YEAR_LEVELS.map((y) => (
+            <option key={y} value={y}>{y} Year</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Table */}
+      <div style={styles.tableWrap}>
+        {loading ? (
+          <div style={styles.emptyState}>Loading students...</div>
+        ) : filtered.length === 0 ? (
+          <div style={styles.emptyState}>
+            {students.length === 0
+              ? 'No students yet. Click "+ Add Student" to create one.'
+              : 'No students match your search.'}
+          </div>
+        ) : (
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Student No.</th>
+                <th style={styles.th}>Name</th>
+                <th style={styles.th}>Email</th>
+                <th style={styles.th}>Course</th>
+                <th style={styles.th}>Year & Section</th>
+                <th style={styles.th}>Status</th>
+                <th style={styles.th}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {displayed.map((s) => (
+                <tr key={s.id}>
+                  <td style={styles.td}>{s.student_number}</td>
+                  <td style={styles.td}>
+                    {s.last_name}, {s.first_name}
+                    {s.middle_name ? ` ${s.middle_name.charAt(0)}.` : ''}
+                  </td>
+                  <td style={styles.td}>{s.email}</td>
+                  <td style={styles.td}>{s.course}</td>
+                  <td style={styles.td}>{yearLabel(s.year_level)} - {s.section}</td>
+                  <td style={styles.td}>
+                    <span
+                      style={{
+                        ...styles.badge,
+                        ...(s.status === 'enrolled'
+                          ? styles.badgeEnrolled
+                          : s.status === 'deactivated'
+                            ? styles.badgeDeactivated
+                            : styles.badgeNotEnrolled),
+                      }}
+                    >
+                      {s.status === 'enrolled' ? 'Enrolled' : s.status === 'deactivated' ? 'Deactivated' : 'Not Enrolled'}
+                    </span>
+                  </td>
+                  <td style={styles.td}>
+                    <button
+                      style={{ ...styles.actionBtn, ...styles.editBtn }}
+                      onClick={() => openEdit(s)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      style={{ ...styles.actionBtn, ...styles.viewScheduleBtn }}
+                      onClick={() => openSchedule(s)}
+                    >
+                      Schedule
+                    </button>
+                    {s.status === 'deactivated' ? (
+                      <button
+                        style={{ ...styles.actionBtn, ...styles.activateBtn }}
+                        onClick={() => handleActivate(s)}
+                      >
+                        Activate
+                      </button>
+                    ) : (
+                      <button
+                        style={{ ...styles.actionBtn, ...styles.deactivateBtn }}
+                        onClick={() => setDeleteTarget(s)}
+                      >
+                        Deactivate
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {!loading && students.length > 0 && (
+        <p style={styles.count}>
+          {isFiltering
+            ? `Showing ${filtered.length} of ${students.length} student${students.length !== 1 ? 's' : ''}`
+            : `Showing ${displayed.length} of ${students.length} most recent records. Use search or filters to find specific students.`}
+        </p>
+      )}
+
+      {/* Add / Edit Modal */}
+      {showModal && (
+        <div style={styles.overlay} onClick={closeModal}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalHeader}>
+              <h2 style={styles.modalTitle}>
+                {editing ? 'Edit Student' : 'Add New Student'}
+              </h2>
+              <button style={styles.closeBtn} onClick={closeModal}>&times;</button>
+            </div>
+
+            <form onSubmit={handleSave}>
+              <div style={styles.modalBody}>
+                {formError && <div style={styles.error}>{formError}</div>}
+
+                <div style={styles.formGrid}>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>First Name *</label>
+                    <input
+                      style={styles.input}
+                      value={form.first_name}
+                      onChange={handleChange('first_name')}
+                      required
+                    />
+                  </div>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Middle Name</label>
+                    <input
+                      style={styles.input}
+                      value={form.middle_name}
+                      onChange={handleChange('middle_name')}
+                    />
+                  </div>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Last Name *</label>
+                    <input
+                      style={styles.input}
+                      value={form.last_name}
+                      onChange={handleChange('last_name')}
+                      required
+                    />
+                  </div>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Student Number *</label>
+                    <input
+                      style={styles.input}
+                      value={form.student_number}
+                      onChange={handleChange('student_number')}
+                      placeholder="e.g. 2024-00001"
+                      required
+                    />
+                  </div>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Email *</label>
+                    <input
+                      type="email"
+                      style={styles.input}
+                      value={form.email}
+                      onChange={handleChange('email')}
+                      required
+                    />
+                  </div>
+                  {!editing && (
+                    <div style={styles.formGroup}>
+                      <label style={styles.label}>Default Password</label>
+                      <input
+                        style={{ ...styles.input, background: '#f5f5f5', color: '#888' }}
+                        value="student@pass"
+                        readOnly
+                      />
+                    </div>
+                  )}
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Mobile Number</label>
+                    <input
+                      style={styles.input}
+                      value={form.mobile_number}
+                      onChange={handleChange('mobile_number')}
+                      placeholder="e.g. 09171234567"
+                    />
+                  </div>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Course *</label>
+                    <select
+                      style={styles.select}
+                      value={form.course}
+                      onChange={handleChange('course')}
+                      required
+                    >
+                      {COURSES.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Year Level *</label>
+                    <select
+                      style={styles.select}
+                      value={form.year_level}
+                      onChange={handleChange('year_level')}
+                      required
+                    >
+                      {YEAR_LEVELS.map((y) => (
+                        <option key={y} value={y}>{y} Year</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>Section *</label>
+                    <input
+                      style={styles.input}
+                      value={form.section}
+                      onChange={handleChange('section')}
+                      placeholder="e.g. A"
+                      required
+                    />
+                  </div>
+                  {editing && (
+                    <div style={styles.formGroup}>
+                      <label style={styles.label}>Status</label>
+                      <select
+                        style={styles.select}
+                        value={form.status}
+                        onChange={handleChange('status')}
+                      >
+                        <option value="not_enrolled">Not Enrolled</option>
+                        <option value="enrolled">Enrolled</option>
+                        <option value="deactivated">Deactivated</option>
+                      </select>
+                    </div>
+                  )}
+                  <div style={styles.formGroupFull}>
+                    <label style={styles.label}>Address</label>
+                    <input
+                      style={styles.input}
+                      value={form.address}
+                      onChange={handleChange('address')}
+                      placeholder="Complete address"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div style={styles.modalFooter}>
+                <button type="button" style={styles.cancelBtn} onClick={closeModal}>
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  style={{ ...styles.saveBtn, opacity: saving ? 0.7 : 1 }}
+                  disabled={saving}
+                >
+                  {saving ? 'Saving...' : editing ? 'Update Student' : 'Add Student'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Schedule Modal */}
+      {scheduleStudent && (
+        <div style={styles.overlay} onClick={closeScheduleModal}>
+          <div style={styles.scheduleModal} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalHeader}>
+              <div>
+                <h2 style={styles.modalTitle}>
+                  {scheduleStudent.last_name}, {scheduleStudent.first_name}
+                </h2>
+                <p style={styles.modalSub}>
+                  {scheduleStudent.student_number} · {scheduleStudent.course} · {yearLabel(scheduleStudent.year_level)} Year
+                </p>
+              </div>
+              <button style={styles.closeBtn} onClick={closeScheduleModal}>&times;</button>
+            </div>
+
+            <div style={styles.modalBody2}>
+              {scheduleEntries.length === 0 ? (
+                <div style={styles.emptySchedule}>No schedule entries yet.</div>
+              ) : (
+                <table style={styles.scheduleTable}>
+                  <thead>
+                    <tr>
+                      <th style={styles.stTh}>Subject</th>
+                      <th style={styles.stTh}>Room</th>
+                      <th style={styles.stTh}>Day</th>
+                      <th style={styles.stTh}>Time</th>
+                      <th style={styles.stTh}></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {scheduleEntries.map((sc) => (
+                      <tr key={sc.id}>
+                        <td style={styles.stTd}>
+                          {sc.subject_code
+                            ? <><strong>{sc.subject_code}</strong> — {sc.subject_name}</>
+                            : <span style={{ color: '#bbb' }}>—</span>}
+                        </td>
+                        <td style={styles.stTd}>{sc.room}</td>
+                        <td style={styles.stTd}>
+                          <span style={styles.dayBadge}>{sc.day}</span>
+                        </td>
+                        <td style={styles.stTd}>
+                          {formatSchedTime(sc.time_start)} – {formatSchedTime(sc.time_end)}
+                        </td>
+                        <td style={styles.stTd}>
+                          <button style={styles.deleteBtnSm} onClick={() => setEntryDeleteTarget(sc)}>
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Entry Delete Confirmation */}
+      {entryDeleteTarget && (
+        <div style={styles.overlay} onClick={() => setEntryDeleteTarget(null)}>
+          <div style={{ ...styles.modal, maxWidth: 400 }} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalHeader}>
+              <h2 style={styles.modalTitle}>Delete Entry</h2>
+              <button style={styles.closeBtn} onClick={() => setEntryDeleteTarget(null)}>&times;</button>
+            </div>
+            <p style={styles.confirmText}>
+              Delete{entryDeleteTarget.subject_code
+                ? <> <strong>{entryDeleteTarget.subject_code}</strong></>
+                : ' this entry'} from schedule? This cannot be undone.
+            </p>
+            <div style={styles.modalFooter}>
+              <button style={styles.cancelBtn} onClick={() => setEntryDeleteTarget(null)}>Cancel</button>
+              <button
+                style={{ ...styles.confirmDeactivateBtn, background: '#d32f2f', opacity: entryDeleting ? 0.7 : 1 }}
+                disabled={entryDeleting}
+                onClick={handleDeleteEntry}
+              >
+                {entryDeleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Deactivate Confirmation */}
+      {deleteTarget && (
+        <div style={styles.overlay} onClick={() => setDeleteTarget(null)}>
+          <div
+            style={{ ...styles.modal, maxWidth: 440 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={styles.modalHeader}>
+              <h2 style={styles.modalTitle}>Deactivate Student</h2>
+              <button style={styles.closeBtn} onClick={() => setDeleteTarget(null)}>
+                &times;
+              </button>
+            </div>
+            <p style={styles.confirmText}>
+              Are you sure you want to deactivate{' '}
+              <strong>
+                {deleteTarget.first_name} {deleteTarget.last_name}
+              </strong>{' '}
+              ({deleteTarget.student_number})? They will no longer be able to
+              log in or access the student portal.
+            </p>
+            <div style={styles.modalFooter}>
+              <button
+                style={styles.cancelBtn}
+                onClick={() => setDeleteTarget(null)}
+              >
+                Cancel
+              </button>
+              <button
+                style={{ ...styles.confirmDeactivateBtn, opacity: deleting ? 0.7 : 1 }}
+                disabled={deleting}
+                onClick={handleDelete}
+              >
+                {deleting ? 'Deactivating...' : 'Deactivate Student'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
