@@ -10,21 +10,31 @@ import Messages from './pages/Messages';
 import Subjects from './pages/Subjects';
 import Enrollments from './pages/Enrollments';
 import EnrollmentSettings from './pages/EnrollmentSettings';
+import Layout from './components/Layout';
+import ProtectedRoute from './components/ProtectedRoute';
+
+function AdminRoute({ children }) {
+  return (
+    <ProtectedRoute>
+      <Layout>{children}</Layout>
+    </ProtectedRoute>
+  );
+}
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/students" element={<Students />} />
-        <Route path="/grades" element={<Grades />} />
-        <Route path="/announcements" element={<Announcements />} />
-        <Route path="/schedules" element={<Schedules />} />
-        <Route path="/messages" element={<Messages />} />
-        <Route path="/subjects" element={<Subjects />} />
-        <Route path="/enrollments" element={<Enrollments />} />
-        <Route path="/enrollment-settings" element={<EnrollmentSettings />} />
+        <Route path="/dashboard" element={<AdminRoute><Dashboard /></AdminRoute>} />
+        <Route path="/students" element={<AdminRoute><Students /></AdminRoute>} />
+        <Route path="/grades" element={<AdminRoute><Grades /></AdminRoute>} />
+        <Route path="/announcements" element={<AdminRoute><Announcements /></AdminRoute>} />
+        <Route path="/schedules" element={<AdminRoute><Schedules /></AdminRoute>} />
+        <Route path="/messages" element={<AdminRoute><Messages /></AdminRoute>} />
+        <Route path="/subjects" element={<AdminRoute><Subjects /></AdminRoute>} />
+        <Route path="/enrollments" element={<AdminRoute><Enrollments /></AdminRoute>} />
+        <Route path="/enrollment-settings" element={<AdminRoute><EnrollmentSettings /></AdminRoute>} />
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>

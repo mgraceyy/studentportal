@@ -3,7 +3,7 @@ const pool = require('../config/db');
 async function getAll(req, res, next) {
   try {
     const result = await pool.query(
-      `SELECT a.id, a.title, a.body, u.name AS posted_by, a.created_at
+      `SELECT a.id, a.title, a.body, CONCAT(u.first_name, ' ', u.last_name) AS posted_by, a.created_at
        FROM announcements a
        JOIN users u ON a.posted_by = u.id
        ORDER BY a.created_at DESC`
