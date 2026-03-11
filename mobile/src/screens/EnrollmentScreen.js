@@ -8,7 +8,6 @@ export default function EnrollmentScreen() {
   const [enrollments, setEnrollments] = useState([]);
   const [enrollmentStatus, setEnrollmentStatus] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('available');
 
   const loadData = () => {
     setLoading(true);
@@ -29,6 +28,7 @@ export default function EnrollmentScreen() {
   useEffect(() => { loadData(); }, []);
 
   const isOpen = enrollmentStatus?.is_open;
+  const enrolledCodes = new Set(enrollments.map(e => e.subject_code));
 
   const handleEnroll = (subject) => {
     Alert.alert(
@@ -94,26 +94,22 @@ export default function EnrollmentScreen() {
         </View>
       )}
 
-      <View style={styles.tabRow}>
-        <TouchableOpacity style={[styles.tab, tab === 'available' && styles.activeTab]} onPress={() => setTab('available')}>
-          <Text style={[styles.tabText, tab === 'available' && styles.activeTabText]}>Available</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.tab, tab === 'enrolled' && styles.activeTab]} onPress={() => setTab('enrolled')}>
-          <Text style={[styles.tabText, tab === 'enrolled' && styles.activeTabText]}>My Enrollments</Text>
-        </TouchableOpacity>
-      </View>
-
-      {tab === 'available' ? (
-        <FlatList
-          data={subjects}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
+      <FlatList
+        data={subjects}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => {
+          const alreadyEnrolled = enrolledCodes.has(item.code);
+          return (
             <View style={styles.card}>
               <Text style={styles.subject}>{item.code} - {item.name}</Text>
               <Text style={styles.detail}>{item.units} units | {item.semester} {item.academic_year}</Text>
               {item.day && <Text style={styles.detail}>{item.day} {item.time_start}-{item.time_end} | Room {item.room}</Text>}
               <Text style={styles.detail}>Slots: {item.current_slots}/{item.max_slots}</Text>
-              {isOpen ? (
+              {alreadyEnrolled ? (
+                <View style={styles.enrolledBtn}>
+                  <Text style={styles.enrolledBtnText}>Already Enrolled</Text>
+                </View>
+              ) : isOpen ? (
                 <TouchableOpacity style={styles.enrollBtn} onPress={() => handleEnroll(item)}>
                   <Text style={styles.enrollBtnText}>Enroll</Text>
                 </TouchableOpacity>
@@ -123,32 +119,10 @@ export default function EnrollmentScreen() {
                 </View>
               )}
             </View>
-          )}
-          ListEmptyComponent={<Text style={styles.empty}>No subjects available.</Text>}
-        />
-      ) : (
-        <FlatList
-          data={enrollments}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              <Text style={styles.subject}>{item.subject_code} - {item.subject_name}</Text>
-              <Text style={styles.detail}>{item.units} units | {item.semester} {item.academic_year}</Text>
-              {item.day && <Text style={styles.detail}>{item.day} {item.time_start}-{item.time_end} | Room {item.room}</Text>}
-              {isOpen ? (
-                <TouchableOpacity style={styles.dropBtn} onPress={() => handleDrop(item)}>
-                  <Text style={styles.dropBtnText}>Drop</Text>
-                </TouchableOpacity>
-              ) : (
-                <View style={styles.disabledBtn}>
-                  <Text style={styles.disabledBtnText}>Dropping Closed</Text>
-                </View>
-              )}
-            </View>
-          )}
-          ListEmptyComponent={<Text style={styles.empty}>No enrollments yet.</Text>}
-        />
-      )}
+          );
+        }}
+        ListEmptyComponent={<Text style={styles.empty}>No subjects available.</Text>}
+      />
     </View>
   );
 }
@@ -171,6 +145,8 @@ const styles = StyleSheet.create({
   enrollBtnText: { color: COLORS.white, fontWeight: '600' },
   dropBtn: { marginTop: 10, backgroundColor: COLORS.error, padding: 10, borderRadius: 6, alignItems: 'center' },
   dropBtnText: { color: COLORS.white, fontWeight: '600' },
+  enrolledBtn: { marginTop: 10, backgroundColor: '#4CAF50', padding: 10, borderRadius: 6, alignItems: 'center' },
+  enrolledBtnText: { color: COLORS.white, fontWeight: '600' },
   disabledBtn: { marginTop: 10, backgroundColor: '#CCCCCC', padding: 10, borderRadius: 6, alignItems: 'center' },
   disabledBtnText: { color: '#666666', fontWeight: '600' },
   empty: { textAlign: 'center', marginTop: 40, color: COLORS.textLight },

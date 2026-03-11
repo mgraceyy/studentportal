@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
 const NAV_ITEMS = [
   { path: '/dashboard', label: 'Dashboard', icon: '📊' },
@@ -126,8 +127,23 @@ const styles = {
 
 function Layout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
   const adminName = localStorage.getItem('admin_name') || 'Admin';
+
+  useEffect(() => {
+    const fetchUnread = () => {
+      api.get('/messages')
+        .then(({ data }) => {
+          const total = data.reduce((sum, c) => sum + (parseInt(c.unread_count) || 0), 0);
+          setUnreadCount(total);
+        })
+        .catch(() => {});
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -151,20 +167,38 @@ function Layout({ children }) {
         </div>
 
         <nav style={styles.nav}>
-          {NAV_ITEMS.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              style={({ isActive }) => ({
-                ...styles.navLink,
-                ...(isActive ? styles.navLinkActive : {}),
-              })}
-              title={collapsed ? item.label : undefined}
-            >
-              <span style={styles.navIcon}>{item.icon}</span>
-              {!collapsed && <span>{item.label}</span>}
-            </NavLink>
-          ))}
+          {NAV_ITEMS.map((item) => {
+            const isMessages = item.path === '/messages';
+            const showBadge = isMessages && unreadCount > 0;
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                style={({ isActive }) => ({
+                  ...styles.navLink,
+                  ...(isActive ? styles.navLinkActive : {}),
+                })}
+                title={collapsed ? item.label : undefined}
+              >
+                <span style={{ ...styles.navIcon, position: 'relative' }}>
+                  {item.icon}
+                  {showBadge && collapsed && (
+                    <span style={{ position: 'absolute', top: -4, right: -4, background: 'red', borderRadius: '50%', width: 8, height: 8, display: 'block' }} />
+                  )}
+                </span>
+                {!collapsed && (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+                    {item.label}
+                    {showBadge && (
+                      <span style={{ background: 'red', color: '#fff', borderRadius: 10, fontSize: 11, fontWeight: 700, padding: '1px 7px', minWidth: 20, textAlign: 'center' }}>
+                        {unreadCount}
+                      </span>
+                    )}
+                  </span>
+                )}
+              </NavLink>
+            );
+          })}
         </nav>
 
         <div style={styles.sidebarFooter}>

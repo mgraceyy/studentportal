@@ -110,13 +110,11 @@ async function getAvailableSubjects(req, res, next) {
     const studentCourse = studentResult.rows[0].course;
 
     const result = await pool.query(
-      `SELECT s.id, s.code, s.name, s.description, s.units, s.semester, s.academic_year,
-              s.room, s.day, s.time_start, s.time_end, s.max_slots, s.current_slots
-       FROM subjects s
-       JOIN subject_courses sc ON s.id = sc.subject_id
-       WHERE s.current_slots < s.max_slots AND sc.course = $1
-       ORDER BY s.code`,
-      [studentCourse]
+      `SELECT id, code, name, description, units, semester, academic_year,
+              room, day, time_start, time_end, max_slots, current_slots
+       FROM subjects
+       WHERE current_slots < max_slots
+       ORDER BY code`
     );
     res.json(result.rows);
   } catch (err) {
@@ -166,17 +164,6 @@ async function enrollSubject(req, res, next) {
     }
 
     const studentId = studentResult.rows[0].id;
-    const studentCourse = studentResult.rows[0].course;
-
-    const courseCheck = await client.query(
-      'SELECT 1 FROM subject_courses WHERE subject_id = $1 AND course = $2',
-      [subject_id, studentCourse]
-    );
-
-    if (courseCheck.rows.length === 0) {
-      await client.query('ROLLBACK');
-      return res.status(403).json({ error: 'This subject is not available for your course.' });
-    }
 
     const subjectResult = await client.query(
       'SELECT * FROM subjects WHERE id = $1',
@@ -204,6 +191,11 @@ async function enrollSubject(req, res, next) {
     await client.query(
       'UPDATE subjects SET current_slots = current_slots + 1 WHERE id = $1',
       [subject_id]
+    );
+
+    await client.query(
+      "UPDATE students SET status = 'enrolled' WHERE id = $1",
+      [studentId]
     );
 
     await client.query('COMMIT');

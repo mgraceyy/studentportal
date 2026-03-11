@@ -365,20 +365,22 @@ function Messages() {
     } catch (err) { /* silent */ }
   }, []);
 
+  // Always poll conversations every 5s (for unread badges + new messages)
   useEffect(() => {
     fetchConversations();
+    const convInterval = setInterval(fetchConversations, 5000);
+    return () => clearInterval(convInterval);
   }, [fetchConversations]);
 
-  // Poll for new messages every 5s when a conversation is open
+  // Poll thread every 5s when a conversation is open
   useEffect(() => {
     if (!activePartner) return;
     fetchThread(activePartner.id);
     pollingRef.current = setInterval(() => {
       fetchThread(activePartner.id);
-      fetchConversations();
     }, 5000);
     return () => clearInterval(pollingRef.current);
-  }, [activePartner, fetchThread, fetchConversations]);
+  }, [activePartner, fetchThread]);
 
   // Scroll to bottom when thread updates
   useEffect(() => {

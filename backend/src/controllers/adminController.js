@@ -131,10 +131,20 @@ async function addGrade(req, res, next) {
   try {
     const { student_id, subject_id, semester, grade } = req.body;
 
+    // student_id from frontend is u.id (user id); resolve to students.id
+    const studentResult = await pool.query(
+      'SELECT id FROM students WHERE user_id = $1',
+      [student_id]
+    );
+    if (studentResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Student not found.' });
+    }
+    const actualStudentId = studentResult.rows[0].id;
+
     const result = await pool.query(
       `INSERT INTO grades (student_id, subject_id, semester, grade)
        VALUES ($1, $2, $3, $4) RETURNING *`,
-      [student_id, subject_id, semester, grade]
+      [actualStudentId, subject_id, semester, grade]
     );
 
     res.status(201).json(result.rows[0]);

@@ -8,8 +8,18 @@ export default function ScheduleScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/students/me/schedule')
-      .then(({ data }) => setSchedule(data))
+    api.get('/students/me/enrollments')
+      .then(({ data }) => {
+        const enrolledData = data.map(e => ({
+          subject_code: e.subject_code,
+          subject_name: e.subject_name,
+          room: e.room || '-',
+          day: e.day || '-',
+          time_start: e.time_start || '-',
+          time_end: e.time_end || '-',
+        }));
+        setSchedule(enrolledData);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);

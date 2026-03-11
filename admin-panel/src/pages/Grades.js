@@ -251,7 +251,6 @@ function Grades() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [students, setStudents] = useState([]);
   const [allSubjects, setAllSubjects] = useState([]);
-  const [enrollments, setEnrollments] = useState([]);
   const [studentSearch, setStudentSearch] = useState('');
   const [subjectSearch, setSubjectSearch] = useState('');
   const [addForm, setAddForm] = useState({
@@ -318,14 +317,12 @@ function Grades() {
     setStudentSearch('');
     setSubjectSearch('');
     try {
-      const [sRes, subRes, enrRes] = await Promise.all([
+      const [sRes, subRes] = await Promise.all([
         api.get('/admin/students'),
         api.get('/admin/subjects'),
-        api.get('/admin/enrollments'),
       ]);
       setStudents(sRes.data.filter((s) => s.status !== 'deactivated'));
       setAllSubjects(subRes.data);
-      setEnrollments(enrRes.data);
     } catch (err) { /* silent */ }
     setShowAddModal(true);
   };
@@ -402,22 +399,7 @@ function Grades() {
       s.first_name.toLowerCase().includes(q) || s.last_name.toLowerCase().includes(q);
   });
 
-  // Only show subjects the selected student is enrolled in, filtered by selected semester
   const selectedStudentObj = students.find((s) => s.id === parseInt(addForm.student_id));
-
-  const studentEnrollments = addForm.student_id
-    ? enrollments.filter((e) =>
-        selectedStudentObj &&
-        e.student_number === selectedStudentObj.student_number &&
-        e.semester === addForm.semester
-      )
-    : [];
-
-  const enrolledSubjectCodes = studentEnrollments.map((e) => e.subject_code);
-
-  const enrolledSubjects = addForm.student_id
-    ? allSubjects.filter((s) => enrolledSubjectCodes.includes(s.code))
-    : [];
 
   // Check which subjects already have a grade for this student + semester
   const gradedSubjectCodes = new Set(
@@ -431,7 +413,7 @@ function Grades() {
       .map((g) => g.subject_code)
   );
 
-  const filteredSubjects = enrolledSubjects.filter((s) => {
+  const filteredSubjects = allSubjects.filter((s) => {
     const q = subjectSearch.toLowerCase();
     return !q || s.code.toLowerCase().includes(q) || s.name.toLowerCase().includes(q);
   });
@@ -560,19 +542,23 @@ function Grades() {
                       onChange={(e) => setStudentSearch(e.target.value)}
                       style={{ ...styles.input, marginBottom: 6 }}
                     />
-                    <select
-                      style={styles.listBox}
-                      size={4}
-                      value={addForm.student_id}
-                      onChange={(e) => setAddForm((p) => ({ ...p, student_id: e.target.value, subject_id: '' }))}
-                    >
-                      <option value="" disabled hidden></option>
-                      {filteredStudents.map((s) => (
-                        <option key={s.id} value={s.id}>
+                    <div style={{ ...styles.listBox, maxHeight: 120, overflowY: 'auto' }}>
+                      {filteredStudents.length === 0 ? (
+                        <div style={{ padding: '8px 10px', color: '#aaa', fontSize: 13 }}>No students found.</div>
+                      ) : filteredStudents.map((s) => (
+                        <div
+                          key={s.id}
+                          onClick={() => setAddForm((p) => ({ ...p, student_id: String(s.id), subject_id: '' }))}
+                          style={{
+                            padding: '7px 10px', cursor: 'pointer', fontSize: 13,
+                            background: addForm.student_id === String(s.id) ? '#1a1a2e' : 'transparent',
+                            color: addForm.student_id === String(s.id) ? '#fff' : '#333',
+                          }}
+                        >
                           {s.student_number} — {s.last_name}, {s.first_name} ({s.course})
-                        </option>
+                        </div>
                       ))}
-                    </select>
+                    </div>
                     {selectedStudent && (
                       <div style={styles.selectedInfo}>
                         Selected: {selectedStudent.student_number} — {selectedStudent.last_name}, {selectedStudent.first_name}
@@ -590,32 +576,29 @@ function Grades() {
                       style={{ ...styles.input, marginBottom: 6 }}
                       disabled={!addForm.student_id}
                     />
-                    <select
-                      style={{
-                        ...styles.listBox,
-                        background: !addForm.student_id ? '#f5f5f5' : '#fff',
-                        color: !addForm.student_id ? '#aaa' : '#333',
-                      }}
-                      size={4}
-                      value={addForm.subject_id}
-                      onChange={(e) => setAddForm((p) => ({ ...p, subject_id: e.target.value }))}
-                      disabled={!addForm.student_id}
-                    >
+                    <div style={{ ...styles.listBox, maxHeight: 120, overflowY: 'auto', background: !addForm.student_id ? '#f5f5f5' : '#fff' }}>
                       {!addForm.student_id ? (
-                        <option disabled>Select a student first</option>
+                        <div style={{ padding: '8px 10px', color: '#aaa', fontSize: 13 }}>Select a student first.</div>
                       ) : filteredSubjects.length === 0 ? (
-                        <option disabled>No enrolled subjects for this semester</option>
-                      ) : (
-                        filteredSubjects.map((s) => {
-                          const hasGrade = gradedSubjectCodes.has(s.code);
-                          return (
-                            <option key={s.id} value={s.id}>
-                              {hasGrade ? '⚠ ' : ''}{s.code} — {s.name}{hasGrade ? ' (grade exists)' : ''}
-                            </option>
-                          );
-                        })
-                      )}
-                    </select>
+                        <div style={{ padding: '8px 10px', color: '#aaa', fontSize: 13 }}>No subjects found.</div>
+                      ) : filteredSubjects.map((s) => {
+                        const hasGrade = gradedSubjectCodes.has(s.code);
+                        const isSelected = addForm.subject_id === String(s.id);
+                        return (
+                          <div
+                            key={s.id}
+                            onClick={() => setAddForm((p) => ({ ...p, subject_id: String(s.id) }))}
+                            style={{
+                              padding: '7px 10px', cursor: 'pointer', fontSize: 13,
+                              background: isSelected ? '#1a1a2e' : 'transparent',
+                              color: isSelected ? '#fff' : hasGrade ? '#e65100' : '#333',
+                            }}
+                          >
+                            {hasGrade ? '⚠ ' : ''}{s.code} — {s.name}{hasGrade ? ' (grade exists)' : ''}
+                          </div>
+                        );
+                      })}
+                    </div>
                     {selectedSubject && (
                       <div style={styles.selectedInfo}>
                         Selected: {selectedSubject.code} — {selectedSubject.name}
