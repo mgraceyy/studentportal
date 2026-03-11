@@ -1,10 +1,10 @@
-# 📚 Student Portal App — Project Wiki
+# Student Portal App — Project Wiki
 
-This wiki serves as the central knowledge base for the Student Portal App project. It covers architecture decisions, module breakdowns, and developer notes.
+Central knowledge base covering architecture, database schema, authentication flow, and development workflow.
 
 ---
 
-## 🗺️ Table of Contents
+## Table of Contents
 
 1. [Project Summary](#1-project-summary)
 2. [System Architecture](#2-system-architecture)
@@ -13,13 +13,12 @@ This wiki serves as the central knowledge base for the Student Portal App projec
 5. [Database Overview](#5-database-overview)
 6. [Authentication Flow](#6-authentication-flow)
 7. [Development Workflow](#7-development-workflow)
-8. [Milestones & Deliverables](#8-milestones--deliverables)
 
 ---
 
 ## 1. Project Summary
 
-The Student Portal App is a full-stack academic information system developed as a capstone project. It consists of three components:
+The Student Portal App is a full-stack academic information system. It consists of three components:
 
 - **Android Mobile App** — for students to access their academic data
 - **Web Admin Panel** — for school administrators to manage content
@@ -43,8 +42,7 @@ The Student Portal App is a full-stack academic information system developed as 
                └────────┬────────┘
                         │
                ┌────────▼────────┐
-               │    Database     │
-               │ (MySQL/Postgres)│
+               │   PostgreSQL    │
                └─────────────────┘
 ```
 
@@ -57,8 +55,8 @@ The Student Portal App is a full-stack academic information system developed as 
 | Module | Screen(s) | Notes |
 |---|---|---|
 | Authentication | Login, Reset Password | JWT stored securely on device |
-| Profile | Student Profile | Read-only view of student data (name, contact, status, tuition balance) |
-| Enrollment | Available Subjects, My Enrollments | Students can browse & enroll in subjects with available slots |
+| Profile | Student Profile | Read-only view of student data |
+| Enrollment | Available Subjects, My Enrollments | Browse and enroll in subjects with available slots |
 | Grades | Grades List | Filtered by semester, linked to subjects |
 | Announcements | Announcements Feed | Sorted by latest |
 | Schedule | Class Schedule | Displayed in a timetable layout |
@@ -69,10 +67,10 @@ The Student Portal App is a full-stack academic information system developed as 
 | Module | Page(s) | Notes |
 |---|---|---|
 | Authentication | Admin Login | Separate credentials from students |
-| Student Management | Student List, Edit Student | Full CRUD with enrollment status & tuition balance |
+| Student Management | Student List, Edit Student | Full CRUD with enrollment status and tuition balance |
 | Subject Management | Subject List, Create/Edit Subject | Manage subject code, units, schedule, max slots |
 | Enrollment Records | Enrollment List | View all student enrollment records |
-| Grades Management | Grade Entry Form | Per student, per subject (linked to subjects table) |
+| Grades Management | Grade Entry Form | Per student, per subject |
 | Announcements | Announcement List, Create/Edit | Rich text optional |
 | Schedule Management | Schedule Editor | Assign rooms and time slots |
 | Messaging | Message Center | View and reply to student messages |
@@ -91,6 +89,8 @@ The Student Portal App is a full-stack academic information system developed as 
 ---
 
 ## 5. Database Overview
+
+The database has **10 tables**. Below is the full schema.
 
 ### Core Tables
 
@@ -140,7 +140,6 @@ subject_courses
 └── course
     (UNIQUE: subject_id + course)
     Links subjects to eligible courses.
-    A subject with no courses is not enrollable.
 
 enrollments
 ├── id
@@ -222,27 +221,4 @@ main          ← production-ready, stable releases only
 - All new work branches off `dev`
 - PRs must be reviewed before merging into `dev`
 - `dev` is merged into `main` only at milestone completions
-- See [CONTRIBUTING.md](./CONTRIBUTING.md) for full branch and commit guidelines
-
----
-
-## 8. Milestones & Deliverables
-
-| Milestone | Target | Deliverable | Payment |
-|---|---|---|---|
-| **Kickoff** | Week 1 | Requirements confirmed, repo set up, DB schema finalized | ₱12,500 (50%) |
-| **Final Delivery** | Week 5 | Complete system, APK, source code, documentation | ₱12,500 (50%) |
-
-### Weekly Breakdown
-
-| Week | Focus |
-|---|---|
-| Week 1 | Project setup, database design, authentication API |
-| Week 2 | Core student APIs (profile, grades, schedule) |
-| Week 3 | Android app screens + admin panel |
-| Week 4 | Messaging, announcements, integration testing |
-| Week 5 | Bug fixes, APK build, documentation, handover |
-
----
-
-*Last updated: February 2026*
+- See [CONTRIBUTING.md](CONTRIBUTING.md) for full branch and commit guidelines
