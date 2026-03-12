@@ -1,189 +1,196 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 
-const styles = {
-  heading: {
-    fontSize: 24,
-    fontWeight: 700,
-    color: '#1a1a2e',
-    marginBottom: 4,
-  },
-  subheading: {
-    fontSize: 14,
-    color: '#888',
-    marginBottom: 28,
-  },
-  grid: {
+const S = {
+  pageHeader: { marginBottom: 28 },
+  greeting: { fontSize: 20, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.4px' },
+  greetingSub: { fontSize: 13.5, color: '#64748b', marginTop: 4 },
+
+  statsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-    gap: 20,
-    marginBottom: 32,
+    gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))',
+    gap: 18, marginBottom: 28,
   },
-  card: {
-    background: '#fff',
-    borderRadius: 12,
-    padding: '24px 20px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-    display: 'flex',
-    alignItems: 'center',
-    gap: 16,
+  statCard: {
+    background: '#fff', borderRadius: 12,
+    padding: '22px 22px',
+    border: '1px solid #e2e8f0',
+    display: 'flex', alignItems: 'center', gap: 16,
+    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
   },
-  cardIcon: {
-    fontSize: 32,
-    width: 56,
-    height: 56,
-    borderRadius: 12,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
+  statIconWrap: {
+    width: 52, height: 52, borderRadius: 12, flexShrink: 0,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontSize: 22,
   },
-  cardValue: {
-    fontSize: 28,
-    fontWeight: 700,
-    color: '#1a1a2e',
-    lineHeight: 1,
-  },
-  cardLabel: {
-    fontSize: 13,
-    color: '#888',
-    marginTop: 4,
-  },
+  statValue: { fontSize: 26, fontWeight: 800, color: '#0f172a', lineHeight: 1, letterSpacing: '-0.5px' },
+  statLabel: { fontSize: 12.5, color: '#64748b', marginTop: 4, fontWeight: 500 },
+
+  bottomRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 },
   section: {
-    background: '#fff',
-    borderRadius: 12,
-    padding: 24,
-    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+    background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0',
+    overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: 600,
-    color: '#1a1a2e',
-    marginBottom: 16,
+  sectionHead: {
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    padding: '16px 20px', borderBottom: '1px solid #f1f5f9',
   },
-  emptyText: {
-    fontSize: 14,
-    color: '#999',
-    textAlign: 'center',
-    padding: '20px 0',
-  },
+  sectionTitle: { fontSize: 14, fontWeight: 700, color: '#0f172a' },
+  sectionBody: { padding: '4px 0' },
   announcementItem: {
-    padding: '12px 0',
-    borderBottom: '1px solid #f0f0f0',
+    display: 'flex', gap: 14, padding: '13px 20px',
+    borderBottom: '1px solid #f8fafc', alignItems: 'flex-start',
   },
-  announcementTitle: {
-    fontSize: 14,
-    fontWeight: 600,
-    color: '#333',
+  aIdx: {
+    width: 24, height: 24, borderRadius: 6,
+    background: '#eff6ff', color: '#2563eb',
+    fontSize: 11, fontWeight: 700,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    flexShrink: 0, marginTop: 1,
   },
-  announcementDate: {
-    fontSize: 12,
-    color: '#999',
-    marginTop: 2,
+  aTitle: { fontSize: 13.5, fontWeight: 600, color: '#0f172a', lineHeight: 1.3 },
+  aDate: { fontSize: 11.5, color: '#94a3b8', marginTop: 3 },
+  emptyText: { fontSize: 13, color: '#94a3b8', textAlign: 'center', padding: '36px 20px' },
+
+  qLinkGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: 16 },
+  qLink: {
+    display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px',
+    borderRadius: 9, border: '1.5px solid #e2e8f0', background: '#f8fafc',
+    cursor: 'pointer', textDecoration: 'none', transition: 'all 0.15s',
+    color: '#0f172a',
   },
+  qLinkIcon: {
+    width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16,
+  },
+  qLinkLabel: { fontSize: 13, fontWeight: 600, color: '#0f172a', lineHeight: 1.2 },
+  qLinkSub: { fontSize: 11, color: '#94a3b8', marginTop: 1 },
 };
 
-const CARD_COLORS = [
-  { bg: '#e3f2fd', color: '#1565c0' },
-  { bg: '#e8f5e9', color: '#2e7d32' },
-  { bg: '#fff3e0', color: '#e65100' },
-  { bg: '#f3e5f5', color: '#7b1fa2' },
+const STAT_COLORS = [
+  { bg: '#eff6ff', color: '#2563eb' },
+  { bg: '#f0fdf4', color: '#16a34a' },
+  { bg: '#fef9c3', color: '#a16207' },
+  { bg: '#fdf4ff', color: '#9333ea' },
+];
+
+const QUICK_LINKS = [
+  { label: 'Add Student', sub: 'Register new student', icon: '👨‍🎓', path: '/students' },
+  { label: 'Post Announcement', sub: 'Notify students', icon: '📢', path: '/announcements' },
+  { label: 'Manage Schedules', sub: 'Classes & rooms', icon: '🗓️', path: '/schedules' },
+  { label: 'Record Grades', sub: 'Academic results', icon: '📝', path: '/grades' },
 ];
 
 function Dashboard() {
-  const [stats, setStats] = useState({
-    students: 0,
-    subjects: 0,
-    enrollments: 0,
-    announcements: 0,
-  });
+  const [stats, setStats] = useState({ students: 0, subjects: 0, enrollments: 0, announcements: 0 });
   const [recentAnnouncements, setRecentAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const adminName = (localStorage.getItem('admin_name') || 'Admin').split(' ')[0];
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [studentsRes, subjectsRes, enrollmentsRes, announcementsRes] = await Promise.allSettled([
+        const [sr, subr, enr, anr] = await Promise.allSettled([
           api.get('/admin/students'),
           api.get('/admin/subjects'),
           api.get('/admin/enrollments'),
           api.get('/announcements'),
         ]);
-
         setStats({
-          students: studentsRes.status === 'fulfilled' ? studentsRes.value.data.length : 0,
-          subjects: subjectsRes.status === 'fulfilled' ? subjectsRes.value.data.length : 0,
-          enrollments: enrollmentsRes.status === 'fulfilled' ? enrollmentsRes.value.data.length : 0,
-          announcements: announcementsRes.status === 'fulfilled' ? announcementsRes.value.data.length : 0,
+          students: sr.status === 'fulfilled' ? sr.value.data.length : 0,
+          subjects: subr.status === 'fulfilled' ? subr.value.data.length : 0,
+          enrollments: enr.status === 'fulfilled' ? enr.value.data.length : 0,
+          announcements: anr.status === 'fulfilled' ? anr.value.data.length : 0,
         });
-
-        if (announcementsRes.status === 'fulfilled') {
-          setRecentAnnouncements(announcementsRes.value.data.slice(0, 5));
-        }
-      } catch (err) {
-        // Stats will remain at 0
-      } finally {
-        setLoading(false);
-      }
+        if (anr.status === 'fulfilled') setRecentAnnouncements(anr.value.data.slice(0, 5));
+      } catch {}
+      finally { setLoading(false); }
     }
     fetchData();
   }, []);
 
   const cards = [
     { label: 'Total Students', value: stats.students, icon: '👨‍🎓' },
-    { label: 'Subjects', value: stats.subjects, icon: '📚' },
+    { label: 'Active Subjects', value: stats.subjects, icon: '📚' },
     { label: 'Enrollments', value: stats.enrollments, icon: '📋' },
     { label: 'Announcements', value: stats.announcements, icon: '📢' },
   ];
 
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
   return (
     <div>
-      <h1 style={styles.heading}>Dashboard</h1>
-      <p style={styles.subheading}>
-        Welcome back, {localStorage.getItem('admin_name') || 'Admin'}
-      </p>
+      {/* Page Header */}
+      <div style={S.pageHeader}>
+        <h1 style={S.greeting}>Good day, {adminName} 👋</h1>
+        <p style={S.greetingSub}>{today}</p>
+      </div>
 
-      {/* Summary Cards */}
-      <div style={styles.grid}>
-        {cards.map((card, i) => (
-          <div key={card.label} style={styles.card}>
-            <div
-              style={{
-                ...styles.cardIcon,
-                background: CARD_COLORS[i].bg,
-              }}
-            >
-              {card.icon}
+      {/* Stats Cards */}
+      <div style={S.statsGrid} className="rsp-stats-grid">
+        {cards.map((c, i) => (
+          <div key={c.label} style={S.statCard}>
+            <div style={{ ...S.statIconWrap, background: STAT_COLORS[i].bg }}>
+              {c.icon}
             </div>
             <div>
-              <div style={styles.cardValue}>
-                {loading ? '—' : card.value}
-              </div>
-              <div style={styles.cardLabel}>{card.label}</div>
+              <div style={S.statValue}>{loading ? '—' : c.value.toLocaleString()}</div>
+              <div style={S.statLabel}>{c.label}</div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Recent Announcements */}
-      <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>Recent Announcements</h2>
-        {loading ? (
-          <p style={styles.emptyText}>Loading...</p>
-        ) : recentAnnouncements.length === 0 ? (
-          <p style={styles.emptyText}>No announcements yet.</p>
-        ) : (
-          recentAnnouncements.map((a) => (
-            <div key={a.id} style={styles.announcementItem}>
-              <div style={styles.announcementTitle}>{a.title}</div>
-              <div style={styles.announcementDate}>
-                {new Date(a.created_at).toLocaleDateString('en-US', {
-                  year: 'numeric', month: 'short', day: 'numeric',
-                })}
-              </div>
-            </div>
-          ))
-        )}
+      {/* Bottom Row */}
+      <div style={S.bottomRow} className="rsp-two-col">
+        {/* Recent Announcements */}
+        <div style={S.section}>
+          <div style={S.sectionHead}>
+            <span style={S.sectionTitle}>Recent Announcements</span>
+            <span style={{ fontSize: 11.5, color: '#94a3b8', fontWeight: 500 }}>
+              {recentAnnouncements.length} recent
+            </span>
+          </div>
+          <div style={S.sectionBody}>
+            {loading ? (
+              <p style={S.emptyText}>Loading…</p>
+            ) : recentAnnouncements.length === 0 ? (
+              <p style={S.emptyText}>No announcements posted yet.</p>
+            ) : (
+              recentAnnouncements.map((a, i) => (
+                <div key={a.id} style={S.announcementItem}>
+                  <div style={S.aIdx}>{i + 1}</div>
+                  <div>
+                    <div style={S.aTitle}>{a.title}</div>
+                    <div style={S.aDate}>
+                      {new Date(a.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric', month: 'short', day: 'numeric',
+                      })}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Quick Links */}
+        <div style={S.section}>
+          <div style={S.sectionHead}>
+            <span style={S.sectionTitle}>Quick Actions</span>
+          </div>
+          <div style={S.qLinkGrid} className="rsp-qlink-grid">
+            {QUICK_LINKS.map((q) => (
+              <a key={q.label} href={q.path} style={S.qLink}>
+                <div style={{ ...S.qLinkIcon, background: '#eff6ff' }}>{q.icon}</div>
+                <div>
+                  <div style={S.qLinkLabel}>{q.label}</div>
+                  <div style={S.qLinkSub}>{q.sub}</div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
