@@ -7,288 +7,162 @@ const styles = {
     height: 'calc(100vh - 120px)',
     background: '#fff',
     borderRadius: 12,
-    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+    border: '1px solid #e2e8f0',
     overflow: 'hidden',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
   },
   // ── Left Sidebar ──
   sidebar: {
-    width: 300,
-    borderRight: '1px solid #eee',
-    display: 'flex',
-    flexDirection: 'column',
-    flexShrink: 0,
+    width: 300, borderRight: '1px solid #e2e8f0',
+    display: 'flex', flexDirection: 'column', flexShrink: 0,
+    background: '#fff',
   },
   sidebarHeader: {
-    padding: '16px',
-    borderBottom: '1px solid #eee',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 10,
+    padding: '14px 16px', borderBottom: '1px solid #e2e8f0',
+    display: 'flex', flexDirection: 'column', gap: 10,
   },
-  sidebarTitle: { fontSize: 16, fontWeight: 700, color: '#1a1a2e' },
+  sidebarTitle: { fontSize: 15, fontWeight: 700, color: '#0f172a' },
   searchInput: {
-    padding: '8px 12px',
-    border: '1.5px solid #ddd',
-    borderRadius: 8,
-    fontSize: 13,
-    outline: 'none',
-    width: '100%',
-    boxSizing: 'border-box',
+    padding: '8px 12px', border: '1.5px solid #e2e8f0',
+    borderRadius: 8, fontSize: 13, outline: 'none',
+    width: '100%', boxSizing: 'border-box', color: '#0f172a',
   },
   newChatBtn: {
-    padding: '8px 12px',
-    background: '#1a1a2e',
-    color: '#fff',
-    border: 'none',
-    borderRadius: 8,
-    fontSize: 13,
-    fontWeight: 600,
-    cursor: 'pointer',
-    width: '100%',
+    padding: '8px 12px', background: '#2563eb', color: '#fff',
+    border: 'none', borderRadius: 8, fontSize: 13,
+    fontWeight: 600, cursor: 'pointer', width: '100%',
   },
-  conversationList: {
-    flex: 1,
-    overflowY: 'auto',
-  },
+  conversationList: { flex: 1, overflowY: 'auto' },
   convItem: {
-    padding: '12px 16px',
-    borderBottom: '1px solid #f5f5f5',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: 10,
-    transition: 'background 0.15s',
+    padding: '11px 16px', borderBottom: '1px solid #f8fafc',
+    cursor: 'pointer', display: 'flex', alignItems: 'flex-start',
+    gap: 10, transition: 'background 0.12s',
   },
   convAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: '50%',
-    background: '#1a1a2e',
-    color: '#fff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 15,
-    fontWeight: 700,
-    flexShrink: 0,
+    width: 38, height: 38, borderRadius: '50%',
+    background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+    color: '#fff', display: 'flex', alignItems: 'center',
+    justifyContent: 'center', fontSize: 13.5, fontWeight: 700, flexShrink: 0,
   },
   convInfo: { flex: 1, minWidth: 0 },
-  convName: { fontSize: 14, fontWeight: 600, color: '#1a1a2e', marginBottom: 2 },
+  convName: { fontSize: 13.5, fontWeight: 600, color: '#0f172a', marginBottom: 2 },
   convPreview: {
-    fontSize: 12,
-    color: '#999',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
+    fontSize: 12, color: '#94a3b8', overflow: 'hidden',
+    textOverflow: 'ellipsis', whiteSpace: 'nowrap',
   },
   convMeta: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-end',
-    gap: 4,
-    flexShrink: 0,
+    display: 'flex', flexDirection: 'column',
+    alignItems: 'flex-end', gap: 4, flexShrink: 0,
   },
-  convTime: { fontSize: 11, color: '#bbb' },
+  convTime: { fontSize: 11, color: '#94a3b8' },
   unreadBadge: {
-    background: '#1a1a2e',
-    color: '#fff',
-    borderRadius: '50%',
-    width: 18,
-    height: 18,
-    fontSize: 10,
-    fontWeight: 700,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    background: '#2563eb', color: '#fff', borderRadius: '50%',
+    width: 18, height: 18, fontSize: 10, fontWeight: 700,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
   emptyConv: {
-    padding: '32px 16px',
-    textAlign: 'center',
-    color: '#bbb',
-    fontSize: 13,
+    padding: '32px 16px', textAlign: 'center',
+    color: '#94a3b8', fontSize: 13,
   },
   // ── Chat Area ──
   chatArea: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    minWidth: 0,
+    flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0,
+    background: '#f8fafc',
   },
   chatHeader: {
-    padding: '14px 20px',
-    borderBottom: '1px solid #eee',
-    display: 'flex',
-    alignItems: 'center',
-    gap: 12,
+    padding: '13px 20px', borderBottom: '1px solid #e2e8f0',
+    display: 'flex', alignItems: 'center', gap: 12,
+    background: '#fff',
   },
   chatHeaderAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: '50%',
-    background: '#1a1a2e',
-    color: '#fff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 14,
-    fontWeight: 700,
+    width: 34, height: 34, borderRadius: '50%',
+    background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+    color: '#fff', display: 'flex', alignItems: 'center',
+    justifyContent: 'center', fontSize: 13, fontWeight: 700,
   },
-  chatHeaderName: { fontSize: 15, fontWeight: 700, color: '#1a1a2e' },
+  chatHeaderName: { fontSize: 14.5, fontWeight: 700, color: '#0f172a' },
   messages: {
-    flex: 1,
-    overflowY: 'auto',
-    padding: '20px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 8,
+    flex: 1, overflowY: 'auto', padding: '20px',
+    display: 'flex', flexDirection: 'column', gap: 8,
   },
   noChatSelected: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: '#bbb',
-    gap: 8,
+    flex: 1, display: 'flex', flexDirection: 'column',
+    alignItems: 'center', justifyContent: 'center',
+    color: '#94a3b8', gap: 10,
   },
-  noChatIcon: { fontSize: 48 },
-  bubbleRow: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
+  noChatIcon: { fontSize: 44, opacity: 0.5 },
+  bubbleRow: { display: 'flex', flexDirection: 'column' },
   bubble: {
-    maxWidth: '70%',
-    padding: '10px 14px',
-    borderRadius: 16,
-    fontSize: 14,
-    lineHeight: 1.5,
-    wordBreak: 'break-word',
+    maxWidth: '70%', padding: '10px 14px', borderRadius: 16,
+    fontSize: 13.5, lineHeight: 1.55, wordBreak: 'break-word',
   },
   bubbleMine: {
-    background: '#1a1a2e',
-    color: '#fff',
-    borderBottomRightRadius: 4,
-    alignSelf: 'flex-end',
+    background: '#2563eb', color: '#fff',
+    borderBottomRightRadius: 4, alignSelf: 'flex-end',
   },
   bubbleTheirs: {
-    background: '#f0f0f0',
-    color: '#333',
-    borderBottomLeftRadius: 4,
-    alignSelf: 'flex-start',
+    background: '#fff', color: '#0f172a',
+    borderBottomLeftRadius: 4, alignSelf: 'flex-start',
+    border: '1px solid #e2e8f0',
   },
-  bubbleTime: {
-    fontSize: 10,
-    color: '#bbb',
-    marginTop: 2,
-  },
+  bubbleTime: { fontSize: 10, color: '#94a3b8', marginTop: 3 },
   bubbleTimeMine: { textAlign: 'right' },
   dateLabel: {
-    textAlign: 'center',
-    fontSize: 11,
-    color: '#bbb',
-    margin: '8px 0',
-    fontWeight: 600,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    textAlign: 'center', fontSize: 11, color: '#94a3b8', margin: '8px 0',
+    fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5,
   },
   inputRow: {
-    padding: '12px 16px',
-    borderTop: '1px solid #eee',
-    display: 'flex',
-    gap: 8,
-    alignItems: 'flex-end',
+    padding: '12px 16px', borderTop: '1px solid #e2e8f0',
+    display: 'flex', gap: 8, alignItems: 'flex-end', background: '#fff',
   },
   msgInput: {
-    flex: 1,
-    padding: '10px 14px',
-    border: '1.5px solid #ddd',
-    borderRadius: 20,
-    fontSize: 14,
-    outline: 'none',
-    resize: 'none',
-    maxHeight: 100,
-    fontFamily: 'inherit',
-    lineHeight: 1.5,
+    flex: 1, padding: '10px 14px', border: '1.5px solid #e2e8f0',
+    borderRadius: 20, fontSize: 13.5, outline: 'none',
+    resize: 'none', maxHeight: 100, fontFamily: 'inherit',
+    lineHeight: 1.5, color: '#0f172a', background: '#fff',
   },
   sendBtn: {
-    padding: '10px 18px',
-    background: '#1a1a2e',
-    color: '#fff',
-    border: 'none',
-    borderRadius: 20,
-    fontSize: 14,
-    fontWeight: 600,
-    cursor: 'pointer',
-    flexShrink: 0,
+    padding: '10px 18px', background: '#2563eb', color: '#fff',
+    border: 'none', borderRadius: 20, fontSize: 13.5,
+    fontWeight: 600, cursor: 'pointer', flexShrink: 0,
   },
   // ── New Chat Modal ──
   overlay: {
-    position: 'fixed',
-    top: 0, left: 0, right: 0, bottom: 0,
-    background: 'rgba(0,0,0,0.5)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
+    position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    zIndex: 1000, backdropFilter: 'blur(2px)',
   },
   modal: {
-    background: '#fff',
-    borderRadius: 12,
-    width: '100%',
-    maxWidth: 420,
-    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-    overflow: 'hidden',
+    background: '#fff', borderRadius: 14, width: '100%', maxWidth: 420,
+    boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', overflow: 'hidden',
   },
   modalHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '16px 20px',
-    borderBottom: '1px solid #eee',
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    padding: '16px 20px', borderBottom: '1px solid #e2e8f0',
   },
-  modalTitle: { fontSize: 16, fontWeight: 700, color: '#1a1a2e' },
+  modalTitle: { fontSize: 16, fontWeight: 700, color: '#0f172a' },
   closeBtn: {
-    background: 'none', border: 'none', fontSize: 22, color: '#999', cursor: 'pointer',
+    background: 'none', border: '1px solid #e2e8f0', borderRadius: 8,
+    width: 30, height: 30, display: 'flex', alignItems: 'center',
+    justifyContent: 'center', color: '#94a3b8', cursor: 'pointer', fontSize: 17,
   },
-  studentList: {
-    maxHeight: 320,
-    overflowY: 'auto',
-  },
+  studentList: { maxHeight: 320, overflowY: 'auto' },
   studentItem: {
-    padding: '12px 20px',
-    cursor: 'pointer',
-    borderBottom: '1px solid #f5f5f5',
-    fontSize: 14,
-    color: '#333',
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
+    padding: '11px 20px', cursor: 'pointer', borderBottom: '1px solid #f8fafc',
+    fontSize: 13.5, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 10,
+    transition: 'background 0.12s',
   },
   studentItemAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: '50%',
-    background: '#e3f2fd',
-    color: '#1565c0',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 12,
-    fontWeight: 700,
-    flexShrink: 0,
+    width: 32, height: 32, borderRadius: '50%',
+    background: '#eff6ff', color: '#2563eb',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontSize: 12, fontWeight: 700, flexShrink: 0,
   },
-  modalSearch: {
-    padding: '10px 20px',
-    borderBottom: '1px solid #eee',
-  },
+  modalSearch: { padding: '10px 20px', borderBottom: '1px solid #e2e8f0' },
   modalSearchInput: {
-    width: '100%',
-    padding: '8px 12px',
-    border: '1.5px solid #ddd',
-    borderRadius: 8,
-    fontSize: 13,
-    outline: 'none',
-    boxSizing: 'border-box',
+    width: '100%', padding: '8px 12px', border: '1.5px solid #e2e8f0',
+    borderRadius: 8, fontSize: 13, outline: 'none',
+    boxSizing: 'border-box', color: '#0f172a',
   },
 };
 
@@ -340,6 +214,7 @@ function Messages() {
   const [messageText, setMessageText] = useState('');
   const [sending, setSending] = useState(false);
   const [convSearch, setConvSearch] = useState('');
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
 
   // New chat modal
   const [showNewChat, setShowNewChat] = useState(false);
@@ -348,6 +223,12 @@ function Messages() {
 
   const messagesEndRef = useRef(null);
   const pollingRef = useRef(null);
+
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
 
   const fetchConversations = useCallback(async () => {
     try {
@@ -481,14 +362,22 @@ function Messages() {
 
   return (
     <div>
-      <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: '#1a1a2e' }}>Messages</h1>
-        <p style={{ fontSize: 14, color: '#888', marginTop: 2 }}>Chat with students</p>
+      <div style={{ marginBottom: 16 }}>
+        <h1 style={{ fontSize: 20, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.4px' }}>Messages</h1>
+        <p style={{ fontSize: 13, color: '#64748b', marginTop: 2 }}>Chat with students</p>
       </div>
 
-      <div style={styles.container}>
-        {/* Left — Conversations */}
-        <div style={styles.sidebar}>
+      <div style={{
+        ...styles.container,
+        height: isMobile ? 'calc(100vh - 140px)' : styles.container.height,
+      }}>
+        {/* Left — Conversations (hidden on mobile when chat is open) */}
+        <div style={{
+          ...styles.sidebar,
+          display: isMobile && activePartner ? 'none' : 'flex',
+          width: isMobile ? '100%' : styles.sidebar.width,
+          borderRight: isMobile && !activePartner ? 'none' : styles.sidebar.borderRight,
+        }}>
           <div style={styles.sidebarHeader}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={styles.sidebarTitle}>Conversations</span>
@@ -544,8 +433,12 @@ function Messages() {
           </div>
         </div>
 
-        {/* Right — Chat */}
-        <div style={styles.chatArea}>
+        {/* Right — Chat (hidden on mobile when no conversation selected) */}
+        <div style={{
+          ...styles.chatArea,
+          display: isMobile && !activePartner ? 'none' : 'flex',
+          width: isMobile ? '100%' : undefined,
+        }}>
           {!activePartner ? (
             <div style={styles.noChatSelected}>
               <span style={styles.noChatIcon}>💬</span>
@@ -556,6 +449,16 @@ function Messages() {
             <>
               {/* Chat Header */}
               <div style={styles.chatHeader}>
+                {isMobile && (
+                  <button
+                    onClick={() => setActivePartner(null)}
+                    style={{
+                      background: 'none', border: 'none', color: '#2563eb',
+                      fontSize: 22, cursor: 'pointer', padding: '0 8px 0 0',
+                      lineHeight: 1, display: 'flex', alignItems: 'center',
+                    }}
+                  >‹</button>
+                )}
                 <div style={styles.chatHeaderAvatar}>
                   {getInitials(activePartner.name)}
                 </div>

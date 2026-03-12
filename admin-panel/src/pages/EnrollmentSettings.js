@@ -2,31 +2,31 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 
 const styles = {
-  pageTitle: { fontSize: 24, fontWeight: 700, color: '#1a1a2e', margin: '0 0 4px' },
-  pageSubtitle: { fontSize: 14, color: '#888', marginBottom: 28 },
+  pageTitle: { fontSize: 20, fontWeight: 800, color: '#0f172a', margin: '0 0 4px' },
+  pageSubtitle: { fontSize: 13.5, color: '#64748b', marginBottom: 28 },
   section: {
     background: '#fff',
     borderRadius: 12,
-    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+    border: '1px solid #e2e8f0',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
     marginBottom: 24,
     overflow: 'hidden',
   },
   sectionHeader: {
-    padding: '18px 24px',
-    borderBottom: '1px solid #f0f0f0',
+    padding: '16px 24px',
+    borderBottom: '1px solid #e2e8f0',
     display: 'flex',
     alignItems: 'center',
     gap: 10,
   },
-  sectionIcon: { fontSize: 18 },
-  sectionTitle: { fontSize: 16, fontWeight: 700, color: '#1a1a2e', margin: 0 },
+  sectionIcon: { fontSize: 17 },
+  sectionTitle: { fontSize: 15, fontWeight: 700, color: '#0f172a', margin: 0 },
   sectionBody: { padding: '24px' },
-  // Change password toggle
   changePwBtn: {
-    padding: '9px 18px',
+    padding: '8px 18px',
     background: 'transparent',
-    color: '#1a1a2e',
-    border: '1.5px solid #1a1a2e',
+    color: '#2563eb',
+    border: '1.5px solid #2563eb',
     borderRadius: 8,
     fontSize: 13,
     fontWeight: 600,
@@ -43,22 +43,23 @@ const styles = {
     gap: 16,
   },
   formGroup: { display: 'flex', flexDirection: 'column' },
-  label: { fontSize: 13, fontWeight: 600, color: '#555', marginBottom: 6 },
+  label: { fontSize: 12.5, fontWeight: 600, color: '#475569', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.4 },
   input: {
     padding: '10px 13px',
-    border: '1.5px solid #ddd',
+    border: '1.5px solid #e2e8f0',
     borderRadius: 8,
     fontSize: 14,
     outline: 'none',
+    color: '#0f172a',
     transition: 'border-color 0.15s',
   },
   readOnly: {
     padding: '10px 13px',
-    border: '1.5px solid #eee',
+    border: '1.5px solid #f1f5f9',
     borderRadius: 8,
     fontSize: 14,
-    background: '#fafafa',
-    color: '#888',
+    background: '#f8fafc',
+    color: '#94a3b8',
   },
   footer: {
     display: 'flex',
@@ -66,37 +67,36 @@ const styles = {
     gap: 12,
     marginTop: 20,
     paddingTop: 20,
-    borderTop: '1px solid #f0f0f0',
+    borderTop: '1px solid #e2e8f0',
   },
   saveBtn: {
     padding: '10px 24px',
-    background: '#1a1a2e',
+    background: '#2563eb',
     color: '#fff',
     border: 'none',
     borderRadius: 8,
-    fontSize: 14,
+    fontSize: 13.5,
     fontWeight: 600,
     cursor: 'pointer',
   },
-  successMsg: { fontSize: 13, color: '#2e7d32', fontWeight: 600 },
-  errorMsg: { fontSize: 13, color: '#d32f2f', fontWeight: 600 },
-  // Toggle
+  successMsg: { fontSize: 13, color: '#15803d', fontWeight: 600 },
+  errorMsg: { fontSize: 13, color: '#dc2626', fontWeight: 600 },
   toggleRow: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '14px 0',
-    borderBottom: '1px solid #f5f5f5',
+    borderBottom: '1px solid #f1f5f9',
     marginBottom: 20,
   },
-  toggleLabel: { fontSize: 15, fontWeight: 600, color: '#1a1a2e' },
-  toggleSub: { fontSize: 13, color: '#888', marginTop: 2 },
+  toggleLabel: { fontSize: 14.5, fontWeight: 600, color: '#0f172a' },
+  toggleSub: { fontSize: 12.5, color: '#64748b', marginTop: 2 },
   toggle: (on) => ({
     position: 'relative',
     width: 44,
     height: 24,
     borderRadius: 12,
-    background: on ? '#1a1a2e' : '#ddd',
+    background: on ? '#2563eb' : '#cbd5e1',
     cursor: 'pointer',
     transition: 'background 0.2s',
     flexShrink: 0,
@@ -115,13 +115,15 @@ const styles = {
     boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
   }),
   enrollBadge: (on) => ({
-    display: 'inline-block',
+    display: 'inline-flex',
+    alignItems: 'center',
     padding: '4px 12px',
-    borderRadius: 12,
-    fontSize: 13,
+    borderRadius: 20,
+    fontSize: 12.5,
     fontWeight: 700,
-    background: on ? '#e8f5e9' : '#fff3e0',
-    color: on ? '#2e7d32' : '#e65100',
+    background: on ? '#f0fdf4' : '#fefce8',
+    color: on ? '#15803d' : '#a16207',
+    border: `1px solid ${on ? '#bbf7d0' : '#fde68a'}`,
   }),
 };
 
@@ -200,7 +202,7 @@ function ProfileSection() {
   if (!editing) {
     return (
       <div style={styles.sectionBody}>
-        <div style={styles.formGrid}>
+        <div style={styles.formGrid} className="rsp-grid-2">
           <div style={styles.formGroup}>
             <label style={styles.label}>First Name</label>
             <div style={styles.readOnly}>{form.first_name || '—'}</div>
@@ -245,7 +247,7 @@ function ProfileSection() {
   return (
     <div style={styles.sectionBody}>
       <form onSubmit={handleSave}>
-        <div style={styles.formGrid}>
+        <div style={styles.formGrid} className="rsp-grid-2">
           <div style={styles.formGroup}>
             <label style={styles.label}>First Name</label>
             <input style={styles.input} value={form.first_name} onChange={(e) => setForm((p) => ({ ...p, first_name: e.target.value }))} placeholder="First name" />
@@ -447,7 +449,7 @@ function EnrollmentSection() {
         </div>
 
         {/* Date Range */}
-        <div style={styles.formGrid}>
+        <div style={styles.formGrid} className="rsp-grid-2">
           <div style={styles.formGroup}>
             <label style={{ ...styles.label, color: settings.enrollment_open ? '#555' : '#bbb' }}>Enrollment Start</label>
             <input
