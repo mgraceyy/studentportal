@@ -23,14 +23,17 @@
     "@babel/core": "^7.25.0",
     "@babel/preset-env": "^7.25.0",
     "@babel/runtime": "^7.25.0",
-    "@react-native-community/cli": "^20.1.2",
-    "@react-native-community/cli-platform-android": "^20.1.2",
+    "@react-native-community/cli": "^15.0.1",
+    "@react-native-community/cli-platform-android": "^15.0.1",
     "@react-native/babel-preset": "0.76.6",
     "@react-native/metro-config": "0.76.6",
     "babel-jest": "^29.7.0",
     "jest": "^29.7.0",
     "metro-react-native-babel-preset": "^0.77.0",
     "react-test-renderer": "18.3.1"
+  },
+  "overrides": {
+    "@react-native-community/cli-server-api": "15.0.1"
   },
   "jest": {
     "preset": "react-native"

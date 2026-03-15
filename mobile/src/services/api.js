@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const api = axios.create({
-  baseURL: 'https://signatures-montana-tied-senator.trycloudflare.com/api', // Public URL via cloudflare tunnel
+  baseURL: 'http://localhost:5000/api',
 });
 
 api.interceptors.request.use(async (config) => {

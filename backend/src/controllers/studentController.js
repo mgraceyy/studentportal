@@ -122,6 +122,137 @@ async function getAvailableSubjects(req, res, next) {
   }
 }
 
+async function getEnrollmentTerms(req, res, next) {
+  try {
+    const studentResult = await pool.query(
+      'SELECT id FROM students WHERE user_id = $1',
+      [req.user.id]
+    );
+
+    if (studentResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Student record not found.' });
+    }
+
+    const studentId = studentResult.rows[0].id;
+
+    const result = await pool.query(
+      `SELECT
+          t.semester,
+          t.academic_year,
+          COALESCE(e.enrolled_count, 0) AS enrolled_count,
+          CASE WHEN COALESCE(e.enrolled_count, 0) > 0 THEN 'enrolled' ELSE 'not_enrolled' END AS enrollment_state
+       FROM (
+         SELECT DISTINCT semester, academic_year FROM subjects
+         UNION
+         SELECT DISTINCT semester, academic_year FROM enrollments WHERE student_id = $1
+       ) t
+       LEFT JOIN (
+         SELECT semester, academic_year, COUNT(*) AS enrolled_count
+         FROM enrollments
+         WHERE student_id = $1
+         GROUP BY semester, academic_year
+       ) e
+       ON e.semester = t.semester AND e.academic_year = t.academic_year
+       ORDER BY
+         t.academic_year DESC,
+         CASE
+           WHEN LOWER(t.semester) LIKE '1st%' OR LOWER(t.semester) = 'first semester' THEN 1
+           WHEN LOWER(t.semester) LIKE '2nd%' OR LOWER(t.semester) = 'second semester' THEN 2
+           WHEN LOWER(t.semester) LIKE '%summer%' THEN 3
+           ELSE 4
+         END DESC`,
+      [studentId]
+    );
+
+    const terms = result.rows.map((row, idx) => ({
+      ...row,
+      enrolled_count: parseInt(row.enrolled_count, 10) || 0,
+      is_latest: idx === 0,
+    }));
+
+    res.json(terms);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getSubjectsByTerm(req, res, next) {
+  try {
+    const studentResult = await pool.query(
+      'SELECT id FROM students WHERE user_id = $1',
+      [req.user.id]
+    );
+
+    if (studentResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Student record not found.' });
+    }
+
+    const studentId = studentResult.rows[0].id;
+    let { semester, academic_year } = req.query;
+
+    if (!semester || !academic_year) {
+      const latestResult = await pool.query(
+        `SELECT semester, academic_year
+         FROM (
+           SELECT DISTINCT semester, academic_year FROM subjects
+           UNION
+           SELECT DISTINCT semester, academic_year FROM enrollments WHERE student_id = $1
+         ) t
+         ORDER BY
+           academic_year DESC,
+           CASE
+             WHEN LOWER(semester) LIKE '1st%' OR LOWER(semester) = 'first semester' THEN 1
+             WHEN LOWER(semester) LIKE '2nd%' OR LOWER(semester) = 'second semester' THEN 2
+             WHEN LOWER(semester) LIKE '%summer%' THEN 3
+             ELSE 4
+           END DESC
+         LIMIT 1`,
+        [studentId]
+      );
+
+      if (latestResult.rows.length === 0) {
+        return res.json([]);
+      }
+
+      semester = latestResult.rows[0].semester;
+      academic_year = latestResult.rows[0].academic_year;
+    }
+
+    const result = await pool.query(
+      `SELECT
+          sub.id,
+          sub.code,
+          sub.name,
+          sub.description,
+          sub.units,
+          sub.semester,
+          sub.academic_year,
+          sub.room,
+          sub.day,
+          sub.time_start,
+          sub.time_end,
+          sub.max_slots,
+          sub.current_slots,
+          e.id AS enrollment_id,
+          CASE WHEN e.id IS NOT NULL THEN TRUE ELSE FALSE END AS already_enrolled,
+          CASE WHEN sub.current_slots < sub.max_slots THEN TRUE ELSE FALSE END AS can_enroll
+       FROM subjects sub
+       LEFT JOIN enrollments e
+         ON e.subject_id = sub.id
+        AND e.student_id = $1
+        AND e.semester = sub.semester
+        AND e.academic_year = sub.academic_year
+       WHERE sub.semester = $2 AND sub.academic_year = $3
+       ORDER BY sub.code`,
+      [studentId, semester, academic_year]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function getMyEnrollments(req, res, next) {
   try {
     const result = await pool.query(
@@ -296,4 +427,5 @@ async function changePassword(req, res, next) {
 module.exports = {
   getProfile, getGrades, getSchedule, changePassword,
   getEnrollmentStatus, getAvailableSubjects, getMyEnrollments, enrollSubject, dropSubject,
+  getEnrollmentTerms, getSubjectsByTerm,
 };

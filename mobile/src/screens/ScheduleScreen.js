@@ -1,35 +1,57 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
 import api from '../services/api';
 import { COLORS } from '../utils/constants';
+import AnimatedBackground from '../components/AnimatedBackground';
 
 export default function ScheduleScreen() {
   const [schedule, setSchedule] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadSchedule = useCallback(async (showRefresh = false) => {
+    if (showRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+
+    try {
+      const { data } = await api.get('/students/me/enrollments');
+      const enrolledData = data.map(e => ({
+        subject_code: e.subject_code,
+        subject_name: e.subject_name,
+        room: e.room || '-',
+        day: e.day || '-',
+        time_start: e.time_start || '-',
+        time_end: e.time_end || '-',
+      }));
+      setSchedule(enrolledData);
+    } catch (_) {
+    } finally {
+      if (showRefresh) {
+        setRefreshing(false);
+      } else {
+        setLoading(false);
+      }
+    }
+  }, []);
 
   useEffect(() => {
-    api.get('/students/me/enrollments')
-      .then(({ data }) => {
-        const enrolledData = data.map(e => ({
-          subject_code: e.subject_code,
-          subject_name: e.subject_name,
-          room: e.room || '-',
-          day: e.day || '-',
-          time_start: e.time_start || '-',
-          time_end: e.time_end || '-',
-        }));
-        setSchedule(enrolledData);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+    loadSchedule(false);
+  }, [loadSchedule]);
 
   if (loading) return <ActivityIndicator style={{ flex: 1 }} size="large" color={COLORS.primary} />;
 
   return (
     <View style={styles.container}>
+      <AnimatedBackground />
+      <Text style={styles.pageTitle}>Class Schedule</Text>
+      <Text style={styles.pageSubtitle}>Institution-approved class timetable for your enrolled subjects.</Text>
       <FlatList
         data={schedule}
+        contentContainerStyle={styles.listContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => loadSchedule(true)} tintColor={COLORS.primary} />}
         keyExtractor={(item, index) => `${item.subject_code}-${index}`}
         renderItem={({ item }) => (
           <View style={styles.card}>
@@ -45,9 +67,19 @@ export default function ScheduleScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: COLORS.background },
-  card: { backgroundColor: COLORS.white, padding: 16, borderRadius: 8, marginBottom: 12 },
-  subject: { fontSize: 18, fontWeight: '600', color: COLORS.primary },
-  detail: { fontSize: 14, color: COLORS.textLight, marginTop: 4 },
+  container: { flex: 1, paddingHorizontal: 16, paddingTop: 14, backgroundColor: '#EAF1F8' },
+  pageTitle: { fontSize: 22, fontWeight: '700', color: '#163657' },
+  pageSubtitle: { marginTop: 4, marginBottom: 12, fontSize: 13, color: '#5D7087' },
+  listContent: { paddingBottom: 16 },
+  card: {
+    backgroundColor: COLORS.white,
+    padding: 16,
+    borderRadius: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#D9E3EE',
+  },
+  subject: { fontSize: 16, fontWeight: '700', color: '#1A395A' },
+  detail: { fontSize: 13, color: '#607489', marginTop: 6 },
   empty: { textAlign: 'center', marginTop: 40, color: COLORS.textLight },
 });
