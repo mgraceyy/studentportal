@@ -8,10 +8,10 @@ async function seed() {
     const passwordHash = await bcrypt.hash('password', SALT_ROUNDS);
 
     await pool.query(
-      `INSERT INTO users (first_name, last_name, email, password_hash, role)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO users (first_name, middle_name, last_name, email, password_hash, role)
+       VALUES ($1, $2, $3, $4, $5, $6)
        ON CONFLICT (email) DO NOTHING`,
-      ['Admin', 'User', 'admin@test.com', passwordHash, 'admin']
+      ['Admin', 'Test', 'User', 'admin@test.com', passwordHash, 'admin']
     );
 
     console.log('Seed completed. Admin account created:');

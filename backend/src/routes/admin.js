@@ -5,7 +5,7 @@ const {
   getAllGrades, addGrade, updateGrade, deleteGrade,
   getSchedules, addSchedule, deleteSchedule,
   getAllSubjects, addSubject, updateSubject, deleteSubject,
-  getEnrollments,
+  getEnrollments, getStudentEnrollments,
   getProspectus, addProspectus, deleteProspectus,
   getEnrollmentSettings, updateEnrollmentSettings,
   getProfile, updateProfile, changePassword,
@@ -32,6 +32,7 @@ router.put('/subjects/:id', updateSubject);
 router.delete('/subjects/:id', deleteSubject);
 
 router.get('/enrollments', getEnrollments);
+router.get('/students/:id/enrollments', getStudentEnrollments);
 
 router.get('/prospectus', getProspectus);
 router.post('/prospectus', addProspectus);

@@ -143,6 +143,7 @@ function Grades() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [students, setStudents] = useState([]);
   const [allSubjects, setAllSubjects] = useState([]);
+  const [enrolledSubjects, setEnrolledSubjects] = useState([]);
   const [studentSearch, setStudentSearch] = useState('');
   const [subjectSearch, setSubjectSearch] = useState('');
   const [addForm, setAddForm] = useState({
@@ -208,15 +209,21 @@ function Grades() {
     setAddError('');
     setStudentSearch('');
     setSubjectSearch('');
+    setEnrolledSubjects([]);
     try {
-      const [sRes, subRes] = await Promise.all([
-        api.get('/admin/students'),
-        api.get('/admin/subjects'),
-      ]);
+      const sRes = await api.get('/admin/students');
       setStudents(sRes.data.filter((s) => s.status !== 'deactivated'));
-      setAllSubjects(subRes.data);
     } catch (err) { /* silent */ }
     setShowAddModal(true);
+  };
+
+  const handleSelectStudent = async (studentId) => {
+    setAddForm((p) => ({ ...p, student_id: String(studentId), subject_id: '' }));
+    setEnrolledSubjects([]);
+    try {
+      const { data } = await api.get(`/admin/students/${studentId}/enrollments`);
+      setEnrolledSubjects(data);
+    } catch (err) { /* silent */ }
   };
 
   const handleAdd = async (e) => {
@@ -299,19 +306,18 @@ function Grades() {
       .filter(
         (g) =>
           selectedStudentObj &&
-          g.student_number === selectedStudentObj.student_number &&
-          g.semester === addForm.semester
+          g.student_number === selectedStudentObj.student_number
       )
       .map((g) => g.subject_code)
   );
 
-  const filteredSubjects = allSubjects.filter((s) => {
+  const filteredSubjects = enrolledSubjects.filter((s) => {
     const q = subjectSearch.toLowerCase();
-    return !q || s.code.toLowerCase().includes(q) || s.name.toLowerCase().includes(q);
+    return !q || s.subject_code.toLowerCase().includes(q) || s.subject_name.toLowerCase().includes(q);
   });
 
   const selectedStudent = selectedStudentObj;
-  const selectedSubject = allSubjects.find((s) => s.id === parseInt(addForm.subject_id));
+  const selectedSubject = enrolledSubjects.find((s) => s.id === parseInt(addForm.subject_id));
 
   return (
     <div>
@@ -440,7 +446,7 @@ function Grades() {
                       ) : filteredStudents.map((s) => (
                         <div
                           key={s.id}
-                          onClick={() => setAddForm((p) => ({ ...p, student_id: String(s.id), subject_id: '' }))}
+                          onClick={() => handleSelectStudent(s.id)}
                           style={{
                             padding: '7px 10px', cursor: 'pointer', fontSize: 13,
                             background: addForm.student_id === String(s.id) ? '#1a1a2e' : 'transparent',
@@ -474,7 +480,7 @@ function Grades() {
                       ) : filteredSubjects.length === 0 ? (
                         <div style={{ padding: '8px 10px', color: '#aaa', fontSize: 13 }}>No subjects found.</div>
                       ) : filteredSubjects.map((s) => {
-                        const hasGrade = gradedSubjectCodes.has(s.code);
+                        const hasGrade = gradedSubjectCodes.has(s.subject_code);
                         const isSelected = addForm.subject_id === String(s.id);
                         return (
                           <div
@@ -486,14 +492,14 @@ function Grades() {
                               color: isSelected ? '#fff' : hasGrade ? '#e65100' : '#333',
                             }}
                           >
-                            {hasGrade ? '⚠ ' : ''}{s.code} — {s.name}{hasGrade ? ' (grade exists)' : ''}
+                            {hasGrade ? '⚠ ' : ''}{s.subject_code} — {s.subject_name}{hasGrade ? ' (grade exists)' : ''}
                           </div>
                         );
                       })}
                     </div>
                     {selectedSubject && (
                       <div style={styles.selectedInfo}>
-                        Selected: {selectedSubject.code} — {selectedSubject.name}
+                        Selected: {selectedSubject.subject_code} — {selectedSubject.subject_name}
                       </div>
                     )}
                   </div>

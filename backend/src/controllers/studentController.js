@@ -381,6 +381,18 @@ async function dropSubject(req, res, next) {
       [enrollment.rows[0].subject_id]
     );
 
+    // If no enrollments remain, reset student status to not_enrolled
+    const remaining = await client.query(
+      'SELECT id FROM enrollments WHERE student_id = $1',
+      [studentId]
+    );
+    if (remaining.rows.length === 0) {
+      await client.query(
+        "UPDATE students SET status = 'not_enrolled' WHERE id = $1",
+        [studentId]
+      );
+    }
+
     await client.query('COMMIT');
     res.json({ message: 'Subject dropped successfully.' });
   } catch (err) {

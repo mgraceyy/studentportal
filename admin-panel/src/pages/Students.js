@@ -211,6 +211,8 @@ function Students() {
 
   useEffect(() => {
     fetchStudents();
+    const interval = setInterval(fetchStudents, 10000);
+    return () => clearInterval(interval);
   }, [fetchStudents]);
 
   // ── Filtering ──
@@ -346,8 +348,8 @@ function Students() {
     setScheduleStudent(student);
     setScheduleEntries([]);
     try {
-      const { data } = await api.get('/admin/schedules');
-      setScheduleEntries(data.filter((sc) => sc.student_number === student.student_number));
+      const { data } = await api.get(`/admin/students/${student.id}/enrollments`);
+      setScheduleEntries(data);
     } catch (err) { /* silent */ }
   };
 
@@ -671,7 +673,7 @@ function Students() {
             <div style={styles.modalHeader}>
               <div>
                 <h2 style={styles.modalTitle}>
-                  {scheduleStudent.last_name}, {scheduleStudent.first_name}
+                  {scheduleStudent.last_name}, {scheduleStudent.first_name} — Enrolled Subjects
                 </h2>
                 <p style={styles.modalSub}>
                   {scheduleStudent.student_number} · {scheduleStudent.course} · {yearLabel(scheduleStudent.year_level)} Year
@@ -682,38 +684,32 @@ function Students() {
 
             <div style={styles.modalBody2}>
               {scheduleEntries.length === 0 ? (
-                <div style={styles.emptySchedule}>No schedule entries yet.</div>
+                <div style={styles.emptySchedule}>No enrolled subjects found.</div>
               ) : (
                 <table style={styles.scheduleTable}>
                   <thead>
                     <tr>
                       <th style={styles.stTh}>Subject</th>
-                      <th style={styles.stTh}>Room</th>
+                      <th style={styles.stTh}>Term</th>
                       <th style={styles.stTh}>Day</th>
                       <th style={styles.stTh}>Time</th>
-                      <th style={styles.stTh}></th>
+                      <th style={styles.stTh}>Room</th>
                     </tr>
                   </thead>
                   <tbody>
                     {scheduleEntries.map((sc) => (
                       <tr key={sc.id}>
                         <td style={styles.stTd}>
-                          {sc.subject_code
-                            ? <><strong>{sc.subject_code}</strong> — {sc.subject_name}</>
-                            : <span style={{ color: '#bbb' }}>—</span>}
+                          <strong>{sc.subject_code}</strong> — {sc.subject_name}
                         </td>
-                        <td style={styles.stTd}>{sc.room}</td>
+                        <td style={styles.stTd}>{sc.semester} {sc.academic_year}</td>
                         <td style={styles.stTd}>
-                          <span style={styles.dayBadge}>{sc.day}</span>
+                          {sc.day ? <span style={styles.dayBadge}>{sc.day}</span> : <span style={{ color: '#bbb' }}>—</span>}
                         </td>
                         <td style={styles.stTd}>
-                          {formatSchedTime(sc.time_start)} – {formatSchedTime(sc.time_end)}
+                          {sc.time_start ? `${formatSchedTime(sc.time_start)} – ${formatSchedTime(sc.time_end)}` : <span style={{ color: '#bbb' }}>—</span>}
                         </td>
-                        <td style={styles.stTd}>
-                          <button style={styles.deleteBtnSm} onClick={() => setEntryDeleteTarget(sc)}>
-                            Delete
-                          </button>
-                        </td>
+                        <td style={styles.stTd}>{sc.room || <span style={{ color: '#bbb' }}>—</span>}</td>
                       </tr>
                     ))}
                   </tbody>

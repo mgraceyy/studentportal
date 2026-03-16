@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, RefreshControl } from 'react-native';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, RefreshControl, ScrollView } from 'react-native';
 import api from '../services/api';
 import { COLORS } from '../utils/constants';
 import AnimatedBackground from '../components/AnimatedBackground';
@@ -104,8 +104,14 @@ export default function MessagesScreen() {
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
   const [showCompose, setShowCompose] = useState(false);
-  const [newReceiverId, setNewReceiverId] = useState('');
+  const [newReceiverId, setNewReceiverId] = useState(null);
+  const [newReceiverName, setNewReceiverName] = useState('');
   const [newBody, setNewBody] = useState('');
+  const [userSearch, setUserSearch] = useState('');
+  const [userResults, setUserResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState('');
+  const searchTimeout = useRef(null);
   const [refreshingConversations, setRefreshingConversations] = useState(false);
   const [refreshingThread, setRefreshingThread] = useState(false);
 
@@ -120,6 +126,36 @@ export default function MessagesScreen() {
       setLoading(false);
     }
   }, []);
+
+  const handleUserSearch = (text) => {
+    setUserSearch(text);
+    setNewReceiverId(null);
+    setNewReceiverName('');
+    setSearchError('');
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    if (!text.trim()) { setUserResults([]); return; }
+    searchTimeout.current = setTimeout(async () => {
+      setSearchLoading(true);
+      try {
+        const { data } = await api.get(`/messages/search-users?q=${encodeURIComponent(text)}`);
+        setUserResults(data);
+        if (data.length === 0) setSearchError('No users found.');
+      } catch (err) {
+        setSearchError('Search failed. Check your connection.');
+        setUserResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 300);
+  };
+
+  const selectUser = (user) => {
+    setNewReceiverId(user.id);
+    setNewReceiverName(user.name);
+    setUserSearch(user.name);
+    setUserResults([]);
+    setSearchError('');
+  };
 
   // Always poll conversations every 5s
   useEffect(() => {
@@ -170,17 +206,18 @@ export default function MessagesScreen() {
   };
 
   const handleSendNew = async () => {
-    if (!newReceiverId.trim() || !newBody.trim()) {
-      return Alert.alert('Validation', 'Please fill in both fields.');
+    if (!newReceiverId || !newBody.trim()) {
+      return Alert.alert('Validation', 'Please select a recipient and write a message.');
     }
-    const id = parseInt(newReceiverId, 10);
-    if (isNaN(id)) return Alert.alert('Validation', 'Recipient ID must be a number.');
     setSending(true);
     try {
-      await api.post('/messages', { receiver_id: id, body: newBody.trim() });
+      await api.post('/messages', { receiver_id: newReceiverId, body: newBody.trim() });
       Alert.alert('Sent', 'Message sent successfully.');
       setShowCompose(false);
-      setNewReceiverId('');
+      setNewReceiverId(null);
+      setNewReceiverName('');
+      setUserSearch('');
+      setUserResults([]);
       setNewBody('');
       loadConversations();
     } catch (err) {
@@ -258,7 +295,14 @@ export default function MessagesScreen() {
       <View style={styles.container}>
         <AnimatedBackground />
         <View style={styles.threadHeader}>
-          <TouchableOpacity style={styles.backPill} onPress={() => { setShowCompose(false); setNewReceiverId(''); setNewBody(''); }}>
+          <TouchableOpacity style={styles.backPill} onPress={() => {
+            setShowCompose(false);
+            setNewReceiverId(null);
+            setNewReceiverName('');
+            setUserSearch('');
+            setUserResults([]);
+            setNewBody('');
+          }}>
             <Text style={styles.backBtn}>←</Text>
           </TouchableOpacity>
           <View style={styles.threadAvatar}>
@@ -269,15 +313,59 @@ export default function MessagesScreen() {
             <Text style={styles.threadStatus}>Start a new conversation</Text>
           </View>
         </View>
-        <View style={styles.composeCard}>
-          <Text style={styles.composeLabel}>Recipient User ID</Text>
-          <TextInput style={styles.input} placeholder="e.g. 12" value={newReceiverId} onChangeText={setNewReceiverId} keyboardType="numeric" />
-          <Text style={styles.composeLabel}>Message</Text>
-          <TextInput style={[styles.input, styles.composeInput]} placeholder="Write your message..." value={newBody} onChangeText={setNewBody} multiline textAlignVertical="top" />
-          <TouchableOpacity style={styles.sendBtn} onPress={handleSendNew} disabled={sending}>
-            {sending ? <ActivityIndicator color={COLORS.white} size="small" /> : <Text style={styles.sendBtnText}>Send Message</Text>}
-          </TouchableOpacity>
-        </View>
+        <ScrollView keyboardShouldPersistTaps="handled">
+          <View style={styles.composeCard}>
+            <Text style={styles.composeLabel}>Recipient</Text>
+            <View style={styles.searchWrapper}>
+              <TextInput
+                style={[styles.input, { marginBottom: userResults.length > 0 ? 0 : 12 }]}
+                placeholder="Search by name..."
+                placeholderTextColor="#7A8EA5"
+                value={userSearch}
+                onChangeText={handleUserSearch}
+                autoCorrect={false}
+              />
+              {searchLoading && (
+                <ActivityIndicator size="small" color={COLORS.primary} style={styles.searchSpinner} />
+              )}
+              {userResults.length > 0 && (
+                <View style={styles.dropdown}>
+                  {userResults.map((user) => (
+                    <TouchableOpacity
+                      key={user.id}
+                      style={styles.dropdownItem}
+                      onPress={() => selectUser(user)}
+                    >
+                      <Text style={styles.dropdownName}>{user.name}</Text>
+                      <Text style={styles.dropdownRole}>{user.role}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+            {searchError ? (
+              <Text style={styles.searchError}>{searchError}</Text>
+            ) : null}
+            {newReceiverId && (
+              <View style={styles.selectedBadge}>
+                <Text style={styles.selectedBadgeText}>✓ {newReceiverName}</Text>
+              </View>
+            )}
+            <Text style={[styles.composeLabel, { marginTop: 12 }]}>Message</Text>
+            <TextInput
+              style={[styles.input, styles.composeInput]}
+              placeholder="Write your message..."
+              placeholderTextColor="#7A8EA5"
+              value={newBody}
+              onChangeText={setNewBody}
+              multiline
+              textAlignVertical="top"
+            />
+            <TouchableOpacity style={styles.sendBtn} onPress={handleSendNew} disabled={sending}>
+              {sending ? <ActivityIndicator color={COLORS.white} size="small" /> : <Text style={styles.sendBtnText}>Send Message</Text>}
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </View>
     );
   }
@@ -464,4 +552,41 @@ const styles = StyleSheet.create({
   composeInput: { minHeight: 130 },
   sendBtn: { backgroundColor: '#113454', padding: 14, borderRadius: 12, alignItems: 'center' },
   sendBtnText: { color: COLORS.white, fontSize: 16, fontWeight: '700', letterSpacing: 0.2 },
+  searchWrapper: { position: 'relative' },
+  searchSpinner: { position: 'absolute', right: 14, top: 16 },
+  dropdown: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#C8D9EE',
+    borderRadius: 12,
+    marginBottom: 12,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#0E2234',
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EBF2FA',
+  },
+  dropdownName: { fontSize: 15, fontWeight: '600', color: '#1A395A' },
+  dropdownRole: { fontSize: 12, color: '#6B8A9E', textTransform: 'capitalize' },
+  selectedBadge: {
+    backgroundColor: '#E2F0FB',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginBottom: 4,
+    borderWidth: 1,
+    borderColor: '#B8D6F0',
+  },
+  selectedBadgeText: { color: '#1A5EA2', fontSize: 14, fontWeight: '700' },
+  searchError: { fontSize: 12, color: '#B74848', marginBottom: 8, marginTop: 2 },
 });

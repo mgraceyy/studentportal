@@ -87,4 +87,43 @@ async function sendMessage(req, res, next) {
   }
 }
 
-module.exports = { getConversations, getThread, sendMessage };
+async function searchUsers(req, res, next) {
+  try {
+    const q = (req.query.q || '').trim();
+    if (!q) return res.json([]);
+    const result = await pool.query(
+      `SELECT id, first_name, last_name, role
+       FROM users
+       WHERE id != $1
+         AND (
+           LOWER(first_name || ' ' || last_name) LIKE LOWER($2)
+           OR LOWER(first_name) LIKE LOWER($2)
+           OR LOWER(last_name) LIKE LOWER($2)
+         )
+       ORDER BY first_name, last_name
+       LIMIT 10`,
+      [req.user.id, `%${q}%`]
+    );
+    res.json(result.rows.map(u => ({
+      id: u.id,
+      name: `${u.first_name} ${u.last_name}`,
+      role: u.role,
+    })));
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getUnreadCount(req, res, next) {
+  try {
+    const result = await pool.query(
+      'SELECT COUNT(*) AS count FROM messages WHERE receiver_id = $1 AND read_at IS NULL',
+      [req.user.id]
+    );
+    res.json({ count: parseInt(result.rows[0].count, 10) });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { getConversations, getThread, sendMessage, searchUsers, getUnreadCount };

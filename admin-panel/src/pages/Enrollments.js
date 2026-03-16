@@ -69,6 +69,8 @@ function Enrollments() {
 
   useEffect(() => {
     fetchEnrollments();
+    const interval = setInterval(fetchEnrollments, 10000);
+    return () => clearInterval(interval);
   }, [fetchEnrollments]);
 
   // Get unique academic years for filter

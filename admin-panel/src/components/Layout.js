@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
 const MOBILE_BP = 768;
 
@@ -39,6 +40,7 @@ function Layout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < MOBILE_BP);
+  const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
   const adminName = localStorage.getItem('admin_name') || 'Admin';
   const initials = adminName.split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase();
@@ -52,6 +54,19 @@ function Layout({ children }) {
     window.addEventListener('resize', handler);
     return () => window.removeEventListener('resize', handler);
   }, []);
+
+  const fetchUnread = useCallback(async () => {
+    try {
+      const { data } = await api.get('/messages/unread-count');
+      setUnreadCount(data.count);
+    } catch (err) { /* silent */ }
+  }, []);
+
+  useEffect(() => {
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 10000);
+    return () => clearInterval(interval);
+  }, [fetchUnread]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -129,29 +144,53 @@ function Layout({ children }) {
 
         {/* Nav */}
         <nav style={{ flex: 1, padding: '10px 8px', overflowY: 'auto' }}>
-          {NAV_ITEMS.map(({ path, label, Icon }) => (
-            <NavLink
-              key={path}
-              to={path}
-              title={(!showLabel) ? label : undefined}
-              className="nav-link"
-              onClick={handleNavClick}
-              style={({ isActive }) => ({
-                display: 'flex', alignItems: 'center',
-                gap: 10, padding: showLabel ? '9px 12px' : '10px 0',
-                margin: '1px 0', borderRadius: 8,
-                color: isActive ? '#fff' : '#94a3b8',
-                background: isActive ? 'rgba(59,130,246,0.18)' : 'transparent',
-                fontSize: 13.5, fontWeight: isActive ? 600 : 500,
-                transition: 'all 0.14s', justifyContent: showLabel ? 'flex-start' : 'center',
-                textDecoration: 'none',
-                borderLeft: isActive ? '3px solid #3b82f6' : '3px solid transparent',
-              })}
-            >
-              <Icon />
-              {showLabel && <span style={{ whiteSpace: 'nowrap' }}>{label}</span>}
-            </NavLink>
-          ))}
+          {NAV_ITEMS.map(({ path, label, Icon }) => {
+            const isMessages = path === '/messages';
+            const showDot = isMessages && unreadCount > 0;
+            return (
+              <NavLink
+                key={path}
+                to={path}
+                title={(!showLabel) ? label : undefined}
+                className="nav-link"
+                onClick={handleNavClick}
+                style={({ isActive }) => ({
+                  display: 'flex', alignItems: 'center',
+                  gap: 10, padding: showLabel ? '9px 12px' : '10px 0',
+                  margin: '1px 0', borderRadius: 8,
+                  color: isActive ? '#fff' : '#94a3b8',
+                  background: isActive ? 'rgba(59,130,246,0.18)' : 'transparent',
+                  fontSize: 13.5, fontWeight: isActive ? 600 : 500,
+                  transition: 'all 0.14s', justifyContent: showLabel ? 'flex-start' : 'center',
+                  textDecoration: 'none',
+                  borderLeft: isActive ? '3px solid #3b82f6' : '3px solid transparent',
+                })}
+              >
+                <div style={{ position: 'relative', flexShrink: 0 }}>
+                  <Icon />
+                  {showDot && (
+                    <span style={{
+                      position: 'absolute', top: -3, right: -4,
+                      width: 8, height: 8, borderRadius: '50%',
+                      background: '#ef4444', border: '1.5px solid #0f172a',
+                    }} />
+                  )}
+                </div>
+                {showLabel && (
+                  <span style={{ whiteSpace: 'nowrap', flex: 1 }}>{label}</span>
+                )}
+                {showLabel && showDot && (
+                  <span style={{
+                    background: '#ef4444', color: '#fff',
+                    borderRadius: 20, fontSize: 10.5, fontWeight: 700,
+                    padding: '1px 6px', marginLeft: 'auto',
+                  }}>
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </NavLink>
+            );
+          })}
         </nav>
 
         {/* User Cell + Logout */}

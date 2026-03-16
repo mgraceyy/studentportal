@@ -113,6 +113,21 @@ const S = {
     fontSize: 14, outline: 'none', color: '#0f172a',
     background: '#fff', transition: 'border-color 0.15s',
   },
+  passwordWrap: {
+    display: 'flex', alignItems: 'center',
+    border: '1.5px solid #e2e8f0', borderRadius: 9,
+    background: '#fff', overflow: 'hidden',
+  },
+  passwordInput: {
+    flex: 1, padding: '11px 14px',
+    border: 'none', outline: 'none',
+    fontSize: 14, color: '#0f172a', background: 'transparent',
+  },
+  eyeBtn: {
+    padding: '0 14px', background: 'none', border: 'none',
+    cursor: 'pointer', fontSize: 17, color: '#64748b',
+    display: 'flex', alignItems: 'center',
+  },
   button: {
     width: '100%', padding: '12px',
     background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
@@ -135,6 +150,7 @@ function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -215,14 +231,24 @@ function Login() {
             </div>
             <div style={S.fieldGroup}>
               <label style={S.label}>Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                required
-                style={S.input}
-              />
+              <div style={S.passwordWrap}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                  style={S.passwordInput}
+                />
+                <button
+                  type="button"
+                  style={S.eyeBtn}
+                  onClick={() => setShowPassword(v => !v)}
+                  tabIndex={-1}
+                >
+                  {showPassword ? '🙈' : '👁️'}
+                </button>
+              </div>
             </div>
             <button
               type="submit"
