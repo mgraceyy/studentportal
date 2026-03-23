@@ -18,6 +18,13 @@ async function login(req, res, next) {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
+    if (user.role === 'student') {
+      const studentResult = await pool.query('SELECT status FROM students WHERE user_id = $1', [user.id]);
+      if (studentResult.rows.length === 0 || studentResult.rows[0].status === 'deactivated') {
+        return res.status(403).json({ error: 'Account is deactivated. Contact administrator.' });
+      }
+    }
+
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET,

@@ -326,7 +326,8 @@ async function getStudentEnrollments(req, res, next) {
   try {
     const { id } = req.params;
     const result = await pool.query(
-      `SELECT e.id, e.semester, e.academic_year, e.enrolled_at,
+      `SELECT e.id AS enrollment_id, sub.id AS subject_id,
+              e.semester, e.academic_year, e.enrolled_at,
               sub.code AS subject_code, sub.name AS subject_name,
               sub.units, sub.day, sub.time_start, sub.time_end, sub.room
        FROM enrollments e
