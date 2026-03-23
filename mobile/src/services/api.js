@@ -2,10 +2,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const api = axios.create({
-  baseURL: 'https://unwilting-homer-inconveniently.ngrok-free.dev/api',
-  headers: {
-    'ngrok-skip-browser-warning': 'true',
-  },
+  // With adb reverse configured, Android device can reach local backend via 127.0.0.1.
+  baseURL: 'http://127.0.0.1:5000/api',
 });
 
 api.interceptors.request.use(async (config) => {
