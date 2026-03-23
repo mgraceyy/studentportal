@@ -366,15 +366,34 @@ async function dropSubject(req, res, next) {
 
     const studentId = studentResult.rows[0].id;
 
+    // First, check if the enrollment exists and get subject_id
+    const enrollmentCheck = await client.query(
+      'SELECT subject_id FROM enrollments WHERE id = $1 AND student_id = $2',
+      [enrollmentId, studentId]
+    );
+
+    if (enrollmentCheck.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Enrollment not found.' });
+    }
+
+    const subjectId = enrollmentCheck.rows[0].subject_id;
+
+    // Check if student has a grade for this subject
+    const gradeCheck = await client.query(
+      'SELECT id FROM grades WHERE student_id = $1 AND subject_id = $2',
+      [studentId, subjectId]
+    );
+
+    if (gradeCheck.rows.length > 0) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'Cannot drop subject. A grade has already been assigned to this subject.' });
+    }
+
     const enrollment = await client.query(
       'DELETE FROM enrollments WHERE id = $1 AND student_id = $2 RETURNING subject_id',
       [enrollmentId, studentId]
     );
-
-    if (enrollment.rows.length === 0) {
-      await client.query('ROLLBACK');
-      return res.status(404).json({ error: 'Enrollment not found.' });
-    }
 
     await client.query(
       'UPDATE subjects SET current_slots = GREATEST(current_slots - 1, 0) WHERE id = $1',

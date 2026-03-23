@@ -317,7 +317,7 @@ function Grades() {
   });
 
   const selectedStudent = selectedStudentObj;
-  const selectedSubject = enrolledSubjects.find((s) => s.id === parseInt(addForm.subject_id));
+  const selectedSubject = enrolledSubjects.find((s) => s.subject_id === parseInt(addForm.subject_id));
 
   return (
     <div>
@@ -481,11 +481,11 @@ function Grades() {
                         <div style={{ padding: '8px 10px', color: '#aaa', fontSize: 13 }}>No subjects found.</div>
                       ) : filteredSubjects.map((s) => {
                         const hasGrade = gradedSubjectCodes.has(s.subject_code);
-                        const isSelected = addForm.subject_id === String(s.id);
+                        const isSelected = addForm.subject_id === String(s.subject_id);
                         return (
                           <div
-                            key={s.id}
-                            onClick={() => setAddForm((p) => ({ ...p, subject_id: String(s.id) }))}
+                            key={s.subject_id}
+                            onClick={() => setAddForm((p) => ({ ...p, subject_id: String(s.subject_id) }))}
                             style={{
                               padding: '7px 10px', cursor: 'pointer', fontSize: 13,
                               background: isSelected ? '#1a1a2e' : 'transparent',
