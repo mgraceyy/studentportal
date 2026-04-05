@@ -4,5 +4,8 @@
   "env": {
     "REACT_APP_API_URL": "https://studentportal-5ssh.onrender.com/api"
   },
-  "envPrefix": "REACT_APP_"
+  "envPrefix": "REACT_APP_",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
