@@ -2,8 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const api = axios.create({
-  // With adb reverse configured, Android device can reach local backend via 127.0.0.1.
-  baseURL: 'http://127.0.0.1:5000/api',
+  baseURL: 'https://studentportal-5ssh.onrender.com/api',
 });
 
 api.interceptors.request.use(async (config) => {
