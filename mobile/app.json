@@ -1,4 +1,12 @@
 {
   "name": "StudentPortalMobile",
-  "displayName": "yourAVC"
+  "displayName": "yourAVC",
+  "expo": {
+    "name": "StudentPortal",
+    "slug": "student-portal-mobile",
+    "version": "1.0.0",
+    "android": {
+      "package": "com.studentportalmobile"
+    }
+  }
 }
