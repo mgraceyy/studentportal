@@ -2,7 +2,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": "build",
   "env": {
-    "REACT_APP_API_URL": "https://your-backend-url.onrender.com/api"
+    "REACT_APP_API_URL": "https://studentportal-5ssh.onrender.com/api"
   },
   "envPrefix": "REACT_APP_"
 }
