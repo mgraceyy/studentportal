@@ -3,7 +3,7 @@ services:
     name: student-portal-backend
     runtime: node
     rootDir: backend
-    buildCommand: npm install && npm run migrate
+    buildCommand: npm install && npm run migrate && npm run seed
     startCommand: node src/index.js
     envVars:
       - key: NODE_ENV
