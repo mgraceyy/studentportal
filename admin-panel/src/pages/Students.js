@@ -555,7 +555,8 @@ function Students() {
                       value={form.student_number}
                       onChange={handleChange('student_number')}
                       placeholder="e.g. 2024-00001"
-                      required
+                      required={!editing}
+                      disabled={editing}
                     />
                   </div>
                   <div style={styles.formGroup}>
