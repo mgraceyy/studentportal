@@ -1,4 +1,27 @@
 {
+  "expo": {
+    "name": "KlasGabay",
+    "slug": "student-portal-mobile",
+    "version": "1.0.0",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTabletMode": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.studentportal.mobile",
+      "permissions": ["android.permission.INTERNET"],
+      "versionCode": 1
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [],
+    "owner": "mrygrace"
+  },
   "name": "StudentPortalMobile",
   "displayName": "KlasGabay"
 }
